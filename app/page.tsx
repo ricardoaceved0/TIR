@@ -24,18 +24,25 @@ async function checkSupabase(): Promise<{
   }
 
   try {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.getUser();
-    // "Auth session missing" just means no one is logged in — the
-    // connection itself works. Any other error is a real problem.
-    if (error && !/session|missing|jwt/i.test(error.message)) {
-      return { ok: false, detail: error.message };
+    // Make a real round-trip to the project's REST endpoint. This both
+    // reaches the server AND validates the key: 200 = key valid + project
+    // reachable, 401 = invalid/expired key. (getUser() alone short-circuits
+    // offline when there's no session, so it can't prove either.)
+    const res = await fetch(`${url}/rest/v1/`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` },
+      cache: "no-store",
+    });
+    if (res.status === 401 || res.status === 403) {
+      return { ok: false, detail: `Reached ${url} but the key was rejected (HTTP ${res.status}). Check NEXT_PUBLIC_SUPABASE_ANON_KEY.` };
     }
-    return { ok: true, detail: `Connected to ${url}` };
+    if (!res.ok) {
+      return { ok: false, detail: `Reached ${url} but got HTTP ${res.status}.` };
+    }
+    return { ok: true, detail: `Connected to ${url} (key validated, HTTP ${res.status})` };
   } catch (e) {
     return {
       ok: false,
-      detail: e instanceof Error ? e.message : "Unknown error",
+      detail: `Could not reach ${url}: ${e instanceof Error ? e.message : "unknown error"}`,
     };
   }
 }
