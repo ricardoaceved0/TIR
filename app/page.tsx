@@ -28,8 +28,12 @@ async function checkSupabase(): Promise<{
     // reaches the server AND validates the key: 200 = key valid + project
     // reachable, 401 = invalid/expired key. (getUser() alone short-circuits
     // offline when there's no session, so it can't prove either.)
+    // Send only the `apikey` header. New-style Supabase keys
+    // (sb_publishable_… / sb_secret_…) are NOT JWTs, so passing the key
+    // as `Authorization: Bearer` makes the REST layer try to parse it as a
+    // JWT and return 401. `apikey` alone authenticates as the anon role.
     const res = await fetch(`${url}/rest/v1/`, {
-      headers: { apikey: key, Authorization: `Bearer ${key}` },
+      headers: { apikey: key },
       cache: "no-store",
     });
     if (res.status === 401 || res.status === 403) {
