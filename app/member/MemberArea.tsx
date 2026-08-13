@@ -105,6 +105,18 @@ export default function MemberArea() {
 
   const activeStep = STEPS.find((s) => s.id === view) ?? STEPS[0];
 
+  // mobile nav: the active-stage label is hidden by default and flashes on tap
+  const [showNavLabel, setShowNavLabel] = useState(false);
+  const navLabelTimer = useRef<number | null>(null);
+  const flashNavLabel = () => {
+    setShowNavLabel(true);
+    if (navLabelTimer.current) window.clearTimeout(navLabelTimer.current);
+    navLabelTimer.current = window.setTimeout(() => setShowNavLabel(false), 2200);
+  };
+  useEffect(() => () => {
+    if (navLabelTimer.current) window.clearTimeout(navLabelTimer.current);
+  }, []);
+
   const go = (id: ScreenId) => {
     setView(id);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -179,13 +191,16 @@ export default function MemberArea() {
               className="dnum"
               aria-current={view === s.id ? "step" : undefined}
               aria-label={`Etapa ${s.num}: ${s.lbl}`}
-              onClick={() => go(s.id)}
+              onClick={() => {
+                go(s.id);
+                flashNavLabel();
+              }}
             >
               <span className="n">{s.num}</span>
             </button>
           ))}
         </div>
-        <div className="steps-m-label">
+        <div className={`steps-m-label${showNavLabel ? " show" : ""}`} aria-hidden={!showNavLabel}>
           <span className="num">{activeStep.num}</span>
           <span className="dash">—</span>
           <span className="lbl">{activeStep.lbl}</span>

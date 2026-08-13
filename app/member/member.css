@@ -286,8 +286,18 @@
 .tir .steps-m .dnum:focus-visible { outline: 3px solid var(--mark); outline-offset: -3px; }
 .tir .steps-m-label {
   text-align: center;
+  overflow: hidden;
+  max-height: 0;
+  padding: 0;
+  border-top: 0 solid #e2e2e9;
+  opacity: 0;
+  transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease;
+}
+.tir .steps-m-label.show {
+  max-height: 60px;
   padding: 11px 0 13px;
-  border-top: 1px solid #e2e2e9;
+  border-top-width: 1px;
+  opacity: 1;
 }
 .tir .steps-m-label .num {
   font-family: "IBM Plex Mono", monospace;
