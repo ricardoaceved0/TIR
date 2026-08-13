@@ -103,6 +103,8 @@ export default function MemberArea() {
 
   const clock = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 
+  const activeStep = STEPS.find((s) => s.id === view) ?? STEPS[0];
+
   const go = (id: ScreenId) => {
     setView(id);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -165,6 +167,28 @@ export default function MemberArea() {
               <span className="lbl">{s.lbl}</span>
             </button>
           ))}
+        </div>
+      </nav>
+
+      {/* mobile stage nav (option D): fixed numbers + active label */}
+      <nav className="steps-m" aria-label="Etapas">
+        <div className="steps-m-nums">
+          {STEPS.map((s) => (
+            <button
+              key={s.id}
+              className="dnum"
+              aria-current={view === s.id ? "step" : undefined}
+              aria-label={`Etapa ${s.num}: ${s.lbl}`}
+              onClick={() => go(s.id)}
+            >
+              <span className="n">{s.num}</span>
+            </button>
+          ))}
+        </div>
+        <div className="steps-m-label">
+          <span className="num">{activeStep.num}</span>
+          <span className="dash">—</span>
+          <span className="lbl">{activeStep.lbl}</span>
         </div>
       </nav>
 

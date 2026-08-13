@@ -258,6 +258,52 @@
 .tir .step[aria-selected="true"] .num { color: var(--mark); opacity: 1; }
 .tir .step:focus-visible { outline: 3px solid var(--mark); outline-offset: -3px; }
 
+/* ---------- mobile stage nav (option D) — shown only on phones ---------- */
+.tir .steps-m { display: none; }
+.tir .steps-m-nums { display: flex; }
+.tir .steps-m .dnum {
+  appearance: none;
+  flex: 1;
+  background: var(--paper);
+  border: 0;
+  border-right: 1px solid #d8d8e0;
+  padding: 13px 0;
+  cursor: pointer;
+  text-align: center;
+  transition: 0.18s;
+}
+.tir .steps-m .dnum:last-child { border-right: 0; }
+.tir .steps-m .dnum .n {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: #9c9ca8;
+}
+.tir .steps-m .dnum:hover { background: var(--wash); }
+.tir .steps-m .dnum:hover .n { color: var(--ink); }
+.tir .steps-m .dnum[aria-current="step"] { background: var(--ink); }
+.tir .steps-m .dnum[aria-current="step"] .n { color: var(--mark); }
+.tir .steps-m .dnum:focus-visible { outline: 3px solid var(--mark); outline-offset: -3px; }
+.tir .steps-m-label {
+  text-align: center;
+  padding: 11px 0 13px;
+  border-top: 1px solid #e2e2e9;
+}
+.tir .steps-m-label .num {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+.tir .steps-m-label .dash { color: var(--muted); margin: 0 6px; }
+.tir .steps-m-label .lbl {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
 /* ---------- memory ribbon ---------- */
 .tir .ribbon {
   background: var(--wash-deep);
@@ -743,8 +789,16 @@
   .tir .hdr-btn { height: 34px; min-width: 34px; padding: 0 7px; }
   .tir .hdr-btn.avatar { width: 34px; min-width: 34px; }
 
-  /* nav + ribbon */
-  .tir .step { padding: 12px 15px; }
+  /* nav: swap horizontal-scroll steps for the fixed-numbers nav (option D) */
+  .tir .steps { display: none; }
+  .tir .steps-m {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 39;
+    background: var(--paper);
+    border-bottom: 1px solid var(--hair);
+  }
   .tir .ribbon-in { gap: 5px 14px; padding: 8px 16px; }
 
   /* shell + rhythm */
