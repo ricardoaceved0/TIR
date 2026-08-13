@@ -37,14 +37,14 @@
 }
 
 /* ---------- ghost dictionary background ---------- */
-.tir .ghost {
+.tir .ghost-bg {
   position: fixed;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
 }
-.tir .ghost span {
+.tir .ghost-bg span {
   position: absolute;
   font-family: "Playfair Display", serif;
   color: #c9c9d6;
@@ -728,8 +728,49 @@
   .tir .split { grid-template-columns: 1fr; }
   .tir .split > div + div { border-top: 2px solid var(--hair); }
   .tir .rub-row { grid-template-columns: 1fr 70px 40px; }
-  .tir .ghost span { font-size: 38px !important; }
+  .tir .ghost-bg span { font-size: 38px !important; }
 }
+
+/* ---------- phones (target 402px) ---------- */
+@media (max-width: 480px) {
+  /* header stays on one row, compact */
+  .tir .bar-in { gap: 12px; padding: 12px 16px; flex-wrap: nowrap; }
+  .tir .brand { gap: 11px; min-width: 0; }
+  .tir .seal { width: 40px; height: 40px; }
+  .tir .wordmark { font-size: 16px; }
+  .tir .byline { display: none; }
+  .tir .hdr-actions { gap: 4px; }
+  .tir .hdr-btn { height: 34px; min-width: 34px; padding: 0 7px; }
+  .tir .hdr-btn.avatar { width: 34px; min-width: 34px; }
+
+  /* nav + ribbon */
+  .tir .step { padding: 12px 15px; }
+  .tir .ribbon-in { gap: 5px 14px; padding: 8px 16px; }
+
+  /* shell + rhythm */
+  .tir .shell { padding: 0 16px; }
+  .tir .screen { padding: 24px 0 44px; }
+  .tir .kicker-rule { margin: 26px 0; }
+
+  /* headings */
+  .tir h1.display { font-size: 28px; }
+  .tir h2.sect { font-size: 22px; }
+
+  /* cards + blocks: reclaim horizontal space */
+  .tir .card { padding: 18px; }
+  .tir .q-block { padding: 22px 18px; }
+  .tir .q-text { font-size: 23px; }
+  .tir .split > div { padding: 18px; }
+  .tir .entry .term { font-size: 21px; }
+
+  /* wrap the entry header cleanly; keep the severity tag inline */
+  .tir .entry .sev { margin-left: 0; }
+
+  /* full-width, thumb-friendly action buttons */
+  .tir .row-actions { flex-direction: column; align-items: stretch; }
+  .tir .row-actions .btn { width: 100%; justify-content: center; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tir *,
   .tir *::before,

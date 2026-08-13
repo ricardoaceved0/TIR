@@ -110,7 +110,7 @@ export default function MemberArea() {
 
   return (
     <div className="tir">
-      <div className="ghost" aria-hidden="true">
+      <div className="ghost-bg" aria-hidden="true">
         <span className="g1">narrative</span>
         <span className="g2">re·source /rɪˈsɔːs/</span>
         <span className="g3">the gap is not the problem</span>
