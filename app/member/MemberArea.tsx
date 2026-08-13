@@ -46,6 +46,49 @@ const NOTES: Record<string, [string, string]> = {
 const RAW_ANSWER =
   "So, um, I took some time off after my daughter was born — about fourteen months — and I know that's a bit of a gap. Before that I was at Meridian for four years, where I was a hard worker and I handled marketing for a few product lines. I'm really passionate about health tech and I think I could bring a lot to this role.";
 
+function GearIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
+
+function HelpIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  );
+}
+
+function FlagES() {
+  return (
+    <svg className="flag-img" viewBox="0 0 3 2" width="22" height="15" aria-hidden="true">
+      <rect width="3" height="2" fill="#AA151B" />
+      <rect y="0.5" width="3" height="1" fill="#F1BF00" />
+    </svg>
+  );
+}
+
+function FlagEN() {
+  return (
+    <svg className="flag-img" viewBox="0 0 26 14" width="22" height="15" aria-hidden="true">
+      <rect width="26" height="14" fill="#fff" />
+      <g fill="#B22234">
+        <rect width="26" height="2" y="0" />
+        <rect width="26" height="2" y="4" />
+        <rect width="26" height="2" y="8" />
+        <rect width="26" height="2" y="12" />
+      </g>
+      <rect width="11" height="8" fill="#3C3B6E" />
+    </svg>
+  );
+}
+
 function Seal() {
   return (
     <svg className="seal" width="52" height="52" viewBox="0 0 100 100" aria-hidden="true">
@@ -68,6 +111,7 @@ function Seal() {
 
 export default function MemberArea() {
   const [view, setView] = useState<ScreenId>("s1");
+  const [lang, setLang] = useState<"es" | "en">("es");
   const [arch, setArch] = useState("01");
   const [mode, setMode] = useState("Conductual");
   const [answer, setAnswer] = useState(RAW_ANSWER);
@@ -107,16 +151,36 @@ export default function MemberArea() {
 
       <header className="bar">
         <div className="bar-in">
-          <Seal />
-          <div>
-            <div className="wordmark">
-              The Interview <em>Room</em>
-              <sup>™</sup>
+          <button className="brand" onClick={() => go("s1")} aria-label="Ir al inicio">
+            <Seal />
+            <div>
+              <div className="wordmark">
+                The Interview <em>Room</em>
+                <sup>™</sup>
+              </div>
+              <div className="byline">con Mariana &amp; Graciela Atencio</div>
             </div>
-            <div className="byline">con Mariana &amp; Graciela Atencio</div>
-          </div>
-          <div className="plan">
-            ACCESO ACTIVO · RENUEVA 14 SEP · <b>PAUSAR</b>
+          </button>
+
+          <div className="hdr-actions">
+            <button className="hdr-btn" aria-label="Ajustes" title="Ajustes">
+              <GearIcon />
+            </button>
+            <button
+              className="hdr-btn flag"
+              aria-label={lang === "es" ? "Idioma: Español" : "Language: English"}
+              title={lang === "es" ? "Idioma: Español" : "Language: English"}
+              onClick={() => setLang((l) => (l === "es" ? "en" : "es"))}
+            >
+              {lang === "es" ? <FlagES /> : <FlagEN />}
+              <span className="flag-code">{lang === "es" ? "ES" : "EN"}</span>
+            </button>
+            <button className="hdr-btn" aria-label="Ayuda" title="Ayuda">
+              <HelpIcon />
+            </button>
+            <button className="hdr-btn avatar" aria-label="Tu perfil" title="Tu perfil">
+              VR
+            </button>
           </div>
         </div>
       </header>

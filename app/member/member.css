@@ -122,6 +122,92 @@
 }
 .tir .plan b { color: var(--mark); font-weight: 600; }
 
+/* ---------- clickable brand (logo → home) ---------- */
+.tir .brand {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border-radius: 8px;
+  transition: opacity 0.18s;
+}
+.tir .brand:hover { opacity: 0.82; }
+.tir .brand:focus-visible { outline: 3px solid var(--mark); outline-offset: 4px; }
+
+/* ---------- header action controls ---------- */
+.tir .hdr-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tir .hdr-btn {
+  appearance: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  min-width: 38px;
+  padding: 0 9px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #d7d7de;
+  font-family: "IBM Plex Mono", monospace;
+  transition: 0.18s;
+}
+.tir .hdr-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--paper);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.tir .hdr-btn:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
+
+.tir .hdr-btn.flag { padding: 0 10px; }
+.tir .flag-img {
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25);
+  display: block;
+}
+.tir .flag-code {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
+.tir .hdr-btn.avatar {
+  width: 38px;
+  min-width: 38px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--mark);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  border-color: transparent;
+}
+.tir .hdr-btn.avatar:hover {
+  background: #f7cf5f;
+  color: var(--ink);
+  border-color: transparent;
+}
+
+@media (max-width: 560px) {
+  .tir .hdr-btn.flag .flag-code { display: none; }
+  .tir .byline { display: none; }
+}
+
 /* ---------- step nav ---------- */
 .tir nav.steps {
   background: var(--paper);
