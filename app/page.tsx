@@ -24,15 +24,14 @@ async function checkSupabase(): Promise<{
   }
 
   try {
-    // Make a real round-trip to the project's REST endpoint. This both
-    // reaches the server AND validates the key: 200 = key valid + project
-    // reachable, 401 = invalid/expired key. (getUser() alone short-circuits
-    // offline when there's no session, so it can't prove either.)
-    // Send only the `apikey` header. New-style Supabase keys
-    // (sb_publishable_… / sb_secret_…) are NOT JWTs, so passing the key
-    // as `Authorization: Bearer` makes the REST layer try to parse it as a
-    // JWT and return 401. `apikey` alone authenticates as the anon role.
-    const res = await fetch(`${url}/rest/v1/`, {
+    // Validate against the auth health endpoint. A real round-trip that
+    // both reaches the project AND checks the publishable key: the gateway
+    // rejects an unknown key with 401 here, so 200 = key accepted + project
+    // reachable. We deliberately do NOT probe `/rest/v1/` — its root
+    // (schema introspection) endpoint requires a *secret* key under
+    // Supabase's new key system and returns 401 (INVALID_API_KEY_TYPE) for
+    // a publishable key, which is a browser-safe key and correct to use here.
+    const res = await fetch(`${url}/auth/v1/health`, {
       headers: { apikey: key },
       cache: "no-store",
     });
@@ -42,7 +41,7 @@ async function checkSupabase(): Promise<{
     if (!res.ok) {
       return { ok: false, detail: `Reached ${url} but got HTTP ${res.status}.` };
     }
-    return { ok: true, detail: `Connected to ${url} (key validated, HTTP ${res.status})` };
+    return { ok: true, detail: `Connected to ${url} (auth API reachable, key valid)` };
   } catch (e) {
     return {
       ok: false,
