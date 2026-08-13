@@ -173,16 +173,16 @@
 }
 .tir .hdr-btn:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
 
-.tir .hdr-btn.flag { padding: 0 10px; }
-.tir .flag-img {
-  border-radius: 3px;
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25);
-  display: block;
-}
-.tir .flag-code {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+.tir .hdr-btn.bell { position: relative; }
+.tir .bell-dot {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--mark);
+  box-shadow: 0 0 0 2px var(--ink);
 }
 
 .tir .hdr-btn.avatar {
@@ -204,7 +204,6 @@
 }
 
 @media (max-width: 560px) {
-  .tir .hdr-btn.flag .flag-code { display: none; }
   .tir .byline { display: none; }
 }
 
