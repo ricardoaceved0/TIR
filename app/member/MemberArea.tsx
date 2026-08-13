@@ -46,6 +46,24 @@ const NOTES: Record<string, [string, string]> = {
 const RAW_ANSWER =
   "So, um, I took some time off after my daughter was born — about fourteen months — and I know that's a bit of a gap. Before that I was at Meridian for four years, where I was a hard worker and I handled marketing for a few product lines. I'm really passionate about health tech and I think I could bring a lot to this role.";
 
+function GearIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
+
+function BellIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  );
+}
+
 function Seal() {
   return (
     <svg className="seal" width="52" height="52" viewBox="0 0 100 100" aria-hidden="true">
@@ -85,6 +103,20 @@ export default function MemberArea() {
 
   const clock = `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
 
+  const activeStep = STEPS.find((s) => s.id === view) ?? STEPS[0];
+
+  // mobile nav: the active-stage label is hidden by default and flashes on tap
+  const [showNavLabel, setShowNavLabel] = useState(false);
+  const navLabelTimer = useRef<number | null>(null);
+  const flashNavLabel = () => {
+    setShowNavLabel(true);
+    if (navLabelTimer.current) window.clearTimeout(navLabelTimer.current);
+    navLabelTimer.current = window.setTimeout(() => setShowNavLabel(false), 2200);
+  };
+  useEffect(() => () => {
+    if (navLabelTimer.current) window.clearTimeout(navLabelTimer.current);
+  }, []);
+
   const go = (id: ScreenId) => {
     setView(id);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -92,7 +124,7 @@ export default function MemberArea() {
 
   return (
     <div className="tir">
-      <div className="ghost" aria-hidden="true">
+      <div className="ghost-bg" aria-hidden="true">
         <span className="g1">narrative</span>
         <span className="g2">re·source /rɪˈsɔːs/</span>
         <span className="g3">the gap is not the problem</span>
@@ -107,16 +139,28 @@ export default function MemberArea() {
 
       <header className="bar">
         <div className="bar-in">
-          <Seal />
-          <div>
-            <div className="wordmark">
-              The Interview <em>Room</em>
-              <sup>™</sup>
+          <button className="brand" onClick={() => go("s1")} aria-label="Ir al inicio">
+            <Seal />
+            <div>
+              <div className="wordmark">
+                The Interview <em>Room</em>
+                <sup>™</sup>
+              </div>
+              <div className="byline">con Mariana &amp; Graciela Atencio</div>
             </div>
-            <div className="byline">con Mariana &amp; Graciela Atencio</div>
-          </div>
-          <div className="plan">
-            ACCESO ACTIVO · RENUEVA 14 SEP · <b>PAUSAR</b>
+          </button>
+
+          <div className="hdr-actions">
+            <button className="hdr-btn" aria-label="Ajustes" title="Ajustes">
+              <GearIcon />
+            </button>
+            <button className="hdr-btn bell" aria-label="Notificaciones" title="Notificaciones">
+              <BellIcon />
+              <span className="bell-dot" aria-hidden="true" />
+            </button>
+            <button className="hdr-btn avatar" aria-label="Tu perfil" title="Tu perfil">
+              VR
+            </button>
           </div>
         </div>
       </header>
@@ -135,6 +179,31 @@ export default function MemberArea() {
               <span className="lbl">{s.lbl}</span>
             </button>
           ))}
+        </div>
+      </nav>
+
+      {/* mobile stage nav (option D): fixed numbers + active label */}
+      <nav className="steps-m" aria-label="Etapas">
+        <div className="steps-m-nums">
+          {STEPS.map((s) => (
+            <button
+              key={s.id}
+              className="dnum"
+              aria-current={view === s.id ? "step" : undefined}
+              aria-label={`Etapa ${s.num}: ${s.lbl}`}
+              onClick={() => {
+                go(s.id);
+                flashNavLabel();
+              }}
+            >
+              <span className="n">{s.num}</span>
+            </button>
+          ))}
+        </div>
+        <div className={`steps-m-label${showNavLabel ? " show" : ""}`} aria-hidden={!showNavLabel}>
+          <span className="num">{activeStep.num}</span>
+          <span className="dash">—</span>
+          <span className="lbl">{activeStep.lbl}</span>
         </div>
       </nav>
 
@@ -159,35 +228,17 @@ export default function MemberArea() {
       <div className="shell">
         {/* ═══════════ 01 ENTRADA ═══════════ */}
         <section className={`screen${view === "s1" ? " on" : ""}`} id="s1">
-          <div className="eyebrow">01 — Entrada</div>
-          <h1 className="display">
-            ¿Qué entrevista
-            <br />
-            estás <em>preparando?</em>
-          </h1>
-          <p className="lede">
-            Pega el job description. La sala lee lo que la empresa realmente necesita, no lo
-            que dice el título del puesto, y arma tu set de preguntas a partir de ahí.
-          </p>
-
-          <div className="kicker-rule" />
-
-          <div className="two">
-            <div className="card stack">
-              <div>
-                <label className="fld" htmlFor="rol">Rol y empresa</label>
-                <input className="txt" id="rol" defaultValue="Sr. Marketing Manager — Lumen Health" readOnly />
-              </div>
-              <div>
-                <label className="fld" htmlFor="jd">Job description</label>
-                <textarea className="txt" id="jd" rows={7} readOnly defaultValue={
-                  "We're looking for a Senior Marketing Manager to own lifecycle and activation. Our signup volume has grown 3x YoY, but 60-day activation has stayed flat. You'll rebuild onboarding comms end to end, partner with Product on in-app education, and own the activation number..."
-                } />
-              </div>
-              <div>
-                <label className="fld" htmlFor="fecha">Fecha de la entrevista</label>
-                <input className="txt" id="fecha" defaultValue="Jueves 6 de agosto · 10:00 AM ET · Zoom · panel de 3" readOnly />
-              </div>
+          <div className="two entrada-hero">
+            <div>
+              <h1 className="display">
+                ¿Qué entrevista
+                <br />
+                estás <em>preparando?</em>
+              </h1>
+              <p className="lede">
+                Pega el job description. La sala lee lo que la empresa realmente necesita, no lo
+                que dice el título del puesto, y arma tu set de preguntas a partir de ahí.
+              </p>
             </div>
 
             <div className="card dark stack">
@@ -217,6 +268,27 @@ export default function MemberArea() {
                   bajas el volumen cuando hablas de resultados propios
                 </span>
               </div>
+            </div>
+          </div>
+
+          <div className="kicker-rule" />
+
+          <div className="card entrada-form">
+            <div className="entrada-form-row">
+              <div>
+                <label className="fld" htmlFor="rol">Rol y empresa</label>
+                <input className="txt" id="rol" defaultValue="Sr. Marketing Manager — Lumen Health" readOnly />
+              </div>
+              <div>
+                <label className="fld" htmlFor="fecha">Fecha de la entrevista</label>
+                <input className="txt" id="fecha" defaultValue="Jueves 6 de agosto · 10:00 AM ET · Zoom · panel de 3" readOnly />
+              </div>
+            </div>
+            <div style={{ marginTop: 16 }}>
+              <label className="fld" htmlFor="jd">Job description</label>
+              <textarea className="txt" id="jd" rows={10} readOnly defaultValue={
+                "We're looking for a Senior Marketing Manager to own lifecycle and activation. Our signup volume has grown 3x YoY, but 60-day activation has stayed flat. You'll rebuild onboarding comms end to end, partner with Product on in-app education, and own the activation number..."
+              } />
             </div>
           </div>
 

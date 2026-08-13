@@ -37,14 +37,14 @@
 }
 
 /* ---------- ghost dictionary background ---------- */
-.tir .ghost {
+.tir .ghost-bg {
   position: fixed;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
   z-index: 0;
 }
-.tir .ghost span {
+.tir .ghost-bg span {
   position: absolute;
   font-family: "Playfair Display", serif;
   color: #c9c9d6;
@@ -122,6 +122,91 @@
 }
 .tir .plan b { color: var(--mark); font-weight: 600; }
 
+/* ---------- clickable brand (logo → home) ---------- */
+.tir .brand {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  border-radius: 8px;
+  transition: opacity 0.18s;
+}
+.tir .brand:hover { opacity: 0.82; }
+.tir .brand:focus-visible { outline: 3px solid var(--mark); outline-offset: 4px; }
+
+/* ---------- header action controls ---------- */
+.tir .hdr-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tir .hdr-btn {
+  appearance: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 38px;
+  min-width: 38px;
+  padding: 0 9px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #d7d7de;
+  font-family: "IBM Plex Mono", monospace;
+  transition: 0.18s;
+}
+.tir .hdr-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--paper);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.tir .hdr-btn:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
+
+.tir .hdr-btn.bell { position: relative; }
+.tir .bell-dot {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--mark);
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+.tir .hdr-btn.avatar {
+  width: 38px;
+  min-width: 38px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--mark);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  border-color: transparent;
+}
+.tir .hdr-btn.avatar:hover {
+  background: #f7cf5f;
+  color: var(--ink);
+  border-color: transparent;
+}
+
+@media (max-width: 560px) {
+  .tir .byline { display: none; }
+}
+
 /* ---------- step nav ---------- */
 .tir nav.steps {
   background: var(--paper);
@@ -172,6 +257,62 @@
 .tir .step[aria-selected="true"] { background: var(--ink); color: var(--paper); }
 .tir .step[aria-selected="true"] .num { color: var(--mark); opacity: 1; }
 .tir .step:focus-visible { outline: 3px solid var(--mark); outline-offset: -3px; }
+
+/* ---------- mobile stage nav (option D) — shown only on phones ---------- */
+.tir .steps-m { display: none; }
+.tir .steps-m-nums { display: flex; }
+.tir .steps-m .dnum {
+  appearance: none;
+  flex: 1;
+  background: var(--paper);
+  border: 0;
+  border-right: 1px solid #d8d8e0;
+  padding: 13px 0;
+  cursor: pointer;
+  text-align: center;
+  transition: 0.18s;
+}
+.tir .steps-m .dnum:last-child { border-right: 0; }
+.tir .steps-m .dnum .n {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: #9c9ca8;
+}
+.tir .steps-m .dnum:hover { background: var(--wash); }
+.tir .steps-m .dnum:hover .n { color: var(--ink); }
+.tir .steps-m .dnum[aria-current="step"] { background: var(--ink); }
+.tir .steps-m .dnum[aria-current="step"] .n { color: var(--mark); }
+.tir .steps-m .dnum:focus-visible { outline: 3px solid var(--mark); outline-offset: -3px; }
+.tir .steps-m-label {
+  text-align: center;
+  overflow: hidden;
+  max-height: 0;
+  padding: 0;
+  border-top: 0 solid #e2e2e9;
+  opacity: 0;
+  transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease;
+}
+.tir .steps-m-label.show {
+  max-height: 60px;
+  padding: 11px 0 13px;
+  border-top-width: 1px;
+  opacity: 1;
+}
+.tir .steps-m-label .num {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+.tir .steps-m-label .dash { color: var(--muted); margin: 0 6px; }
+.tir .steps-m-label .lbl {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
 
 /* ---------- memory ribbon ---------- */
 .tir .ribbon {
@@ -588,6 +729,16 @@
 
 /* ---------- misc ---------- */
 .tir .kicker-rule { height: 1px; background: var(--hair); margin: 34px 0; }
+
+/* ---------- entrada layout ---------- */
+.tir .entrada-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 640px) {
+  .tir .entrada-form-row { grid-template-columns: 1fr; }
+}
 .tir .two { display: grid; grid-template-columns: 1.35fr 1fr; gap: 22px; align-items: start; }
 .tir .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .tir .agentline {
@@ -633,8 +784,57 @@
   .tir .split { grid-template-columns: 1fr; }
   .tir .split > div + div { border-top: 2px solid var(--hair); }
   .tir .rub-row { grid-template-columns: 1fr 70px 40px; }
-  .tir .ghost span { font-size: 38px !important; }
+  .tir .ghost-bg span { font-size: 38px !important; }
 }
+
+/* ---------- phones (target 402px) ---------- */
+@media (max-width: 480px) {
+  /* header stays on one row, compact */
+  .tir .bar-in { gap: 12px; padding: 12px 16px; flex-wrap: nowrap; }
+  .tir .brand { gap: 11px; min-width: 0; }
+  .tir .seal { width: 40px; height: 40px; }
+  .tir .wordmark { font-size: 16px; }
+  .tir .byline { display: none; }
+  .tir .hdr-actions { gap: 4px; }
+  .tir .hdr-btn { height: 34px; min-width: 34px; padding: 0 7px; }
+  .tir .hdr-btn.avatar { width: 34px; min-width: 34px; }
+
+  /* nav: swap horizontal-scroll steps for the fixed-numbers nav (option D) */
+  .tir .steps { display: none; }
+  .tir .steps-m {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 39;
+    background: var(--paper);
+    border-bottom: 1px solid var(--hair);
+  }
+  .tir .ribbon-in { gap: 5px 14px; padding: 8px 16px; }
+
+  /* shell + rhythm */
+  .tir .shell { padding: 0 16px; }
+  .tir .screen { padding: 24px 0 44px; }
+  .tir .kicker-rule { margin: 26px 0; }
+
+  /* headings */
+  .tir h1.display { font-size: 28px; }
+  .tir h2.sect { font-size: 22px; }
+
+  /* cards + blocks: reclaim horizontal space */
+  .tir .card { padding: 18px; }
+  .tir .q-block { padding: 22px 18px; }
+  .tir .q-text { font-size: 23px; }
+  .tir .split > div { padding: 18px; }
+  .tir .entry .term { font-size: 21px; }
+
+  /* wrap the entry header cleanly; keep the severity tag inline */
+  .tir .entry .sev { margin-left: 0; }
+
+  /* full-width, thumb-friendly action buttons */
+  .tir .row-actions { flex-direction: column; align-items: stretch; }
+  .tir .row-actions .btn { width: 100%; justify-content: center; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .tir *,
   .tir *::before,
