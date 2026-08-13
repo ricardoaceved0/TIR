@@ -189,35 +189,17 @@ export default function MemberArea() {
       <div className="shell">
         {/* ═══════════ 01 ENTRADA ═══════════ */}
         <section className={`screen${view === "s1" ? " on" : ""}`} id="s1">
-          <div className="eyebrow">01 — Entrada</div>
-          <h1 className="display">
-            ¿Qué entrevista
-            <br />
-            estás <em>preparando?</em>
-          </h1>
-          <p className="lede">
-            Pega el job description. La sala lee lo que la empresa realmente necesita, no lo
-            que dice el título del puesto, y arma tu set de preguntas a partir de ahí.
-          </p>
-
-          <div className="kicker-rule" />
-
-          <div className="two">
-            <div className="card stack">
-              <div>
-                <label className="fld" htmlFor="rol">Rol y empresa</label>
-                <input className="txt" id="rol" defaultValue="Sr. Marketing Manager — Lumen Health" readOnly />
-              </div>
-              <div>
-                <label className="fld" htmlFor="jd">Job description</label>
-                <textarea className="txt" id="jd" rows={7} readOnly defaultValue={
-                  "We're looking for a Senior Marketing Manager to own lifecycle and activation. Our signup volume has grown 3x YoY, but 60-day activation has stayed flat. You'll rebuild onboarding comms end to end, partner with Product on in-app education, and own the activation number..."
-                } />
-              </div>
-              <div>
-                <label className="fld" htmlFor="fecha">Fecha de la entrevista</label>
-                <input className="txt" id="fecha" defaultValue="Jueves 6 de agosto · 10:00 AM ET · Zoom · panel de 3" readOnly />
-              </div>
+          <div className="two entrada-hero">
+            <div>
+              <h1 className="display">
+                ¿Qué entrevista
+                <br />
+                estás <em>preparando?</em>
+              </h1>
+              <p className="lede">
+                Pega el job description. La sala lee lo que la empresa realmente necesita, no lo
+                que dice el título del puesto, y arma tu set de preguntas a partir de ahí.
+              </p>
             </div>
 
             <div className="card dark stack">
@@ -247,6 +229,27 @@ export default function MemberArea() {
                   bajas el volumen cuando hablas de resultados propios
                 </span>
               </div>
+            </div>
+          </div>
+
+          <div className="kicker-rule" />
+
+          <div className="card entrada-form">
+            <div className="entrada-form-row">
+              <div>
+                <label className="fld" htmlFor="rol">Rol y empresa</label>
+                <input className="txt" id="rol" defaultValue="Sr. Marketing Manager — Lumen Health" readOnly />
+              </div>
+              <div>
+                <label className="fld" htmlFor="fecha">Fecha de la entrevista</label>
+                <input className="txt" id="fecha" defaultValue="Jueves 6 de agosto · 10:00 AM ET · Zoom · panel de 3" readOnly />
+              </div>
+            </div>
+            <div style={{ marginTop: 16 }}>
+              <label className="fld" htmlFor="jd">Job description</label>
+              <textarea className="txt" id="jd" rows={10} readOnly defaultValue={
+                "We're looking for a Senior Marketing Manager to own lifecycle and activation. Our signup volume has grown 3x YoY, but 60-day activation has stayed flat. You'll rebuild onboarding comms end to end, partner with Product on in-app education, and own the activation number..."
+              } />
             </div>
           </div>
 

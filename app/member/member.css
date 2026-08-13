@@ -673,6 +673,16 @@
 
 /* ---------- misc ---------- */
 .tir .kicker-rule { height: 1px; background: var(--hair); margin: 34px 0; }
+
+/* ---------- entrada layout ---------- */
+.tir .entrada-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 640px) {
+  .tir .entrada-form-row { grid-template-columns: 1fr; }
+}
 .tir .two { display: grid; grid-template-columns: 1.35fr 1fr; gap: 22px; align-items: start; }
 .tir .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .tir .agentline {
