@@ -741,33 +741,33 @@
 }
 .tir .txt.subtle { background: #f3f3f7; }
 
-/* ---------- progress stepper (compact, dark card ≤150px) ---------- */
-.tir .sabe-card { padding: 14px 18px; }
-.tir .sabe-card .sect { font-size: 18px; line-height: 1.2; }
-.tir .sabe-card.stack > * + * { margin-top: 8px; }
+/* ---------- progress stepper (dark card) ---------- */
+.tir .sabe-card { padding: 22px; }
+.tir .sabe-card .sect { font-size: 19px; line-height: 1.2; }
+.tir .sabe-card.stack > * + * { margin-top: 16px; }
 .tir .steps-prog { margin-top: 2px; }
 .tir .pstep {
   position: relative;
   display: grid;
-  grid-template-columns: 24px 1fr;
-  gap: 12px;
+  grid-template-columns: 26px 1fr;
+  gap: 13px;
   align-items: center;
-  padding-bottom: 8px;
+  padding-bottom: 15px;
 }
 .tir .pstep:last-child { padding-bottom: 0; }
 .tir .pstep::before {
   content: "";
   position: absolute;
-  left: 11px;
-  top: 24px;
+  left: 12px;
+  top: 26px;
   bottom: 0;
   width: 2px;
   background: #3a3a42;
 }
 .tir .pstep:last-child::before { display: none; }
 .tir .pdot {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1017,6 +1017,7 @@
 }
 
 .tir .row-actions { margin-top: 26px; display: flex; gap: 12px; flex-wrap: wrap; }
+.tir .row-actions.end { justify-content: flex-end; }
 .tir .foot {
   border-top: 1px solid #c6c6d2;
   margin-top: 40px;

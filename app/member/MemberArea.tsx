@@ -412,7 +412,7 @@ export default function MemberArea() {
             </div>
           </div>
 
-          <div className="row-actions">
+          <div className="row-actions end">
             <button className="btn" onClick={() => go("s2")}>Enviar</button>
           </div>
         </section>
