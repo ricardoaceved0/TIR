@@ -24,6 +24,13 @@ const ARCHETYPES = [
 
 const MODES = ["Conductual", "Técnica", "Panel", "Promoción interna", "Hostil"];
 
+const STAGES = [
+  { v: "Reclutador", full: "Reclutador", short: "Reclutador" },
+  { v: "Jefe Directo", full: "Jefe Directo", short: "Jefe Directo" },
+  { v: "Pares · Equipo", full: "Pares · Equipo", short: "Pares/Equipo" },
+  { v: "Ronda Final · Ejecutivo", full: "Ronda Final · Ejecutivo", short: "Ejecutivo" },
+];
+
 const NOTES: Record<string, [string, string]> = {
   disculpa: [
     "Ownership, sin disculpa",
@@ -51,6 +58,22 @@ function GearIcon() {
     <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
+
+function SlidersIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <line x1="4" y1="21" x2="4" y2="14" />
+      <line x1="4" y1="10" x2="4" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12" y2="3" />
+      <line x1="20" y1="21" x2="20" y2="16" />
+      <line x1="20" y1="12" x2="20" y2="3" />
+      <line x1="1" y1="14" x2="7" y2="14" />
+      <line x1="9" y1="8" x2="15" y2="8" />
+      <line x1="17" y1="16" x2="23" y2="16" />
     </svg>
   );
 }
@@ -116,6 +139,19 @@ export default function MemberArea() {
   useEffect(() => () => {
     if (navLabelTimer.current) window.clearTimeout(navLabelTimer.current);
   }, []);
+
+  // Entrada: collapsible interview-configuration section
+  const [cfgOpen, setCfgOpen] = useState(false);
+  const [stage, setStage] = useState(STAGES[0].v);
+  const [liUrl, setLiUrl] = useState("");
+  const [tools, setTools] = useState<string[]>([]);
+  const [toolDraft, setToolDraft] = useState("");
+  const addTool = () => {
+    const t = toolDraft.trim();
+    if (t && !tools.includes(t)) setTools([...tools, t]);
+    setToolDraft("");
+  };
+  const removeTool = (t: string) => setTools(tools.filter((x) => x !== t));
 
   const go = (id: ScreenId) => {
     setView(id);
@@ -276,19 +312,131 @@ export default function MemberArea() {
           <div className="card entrada-form">
             <div className="entrada-form-row">
               <div>
-                <label className="fld" htmlFor="rol">Rol y empresa</label>
-                <input className="txt" id="rol" defaultValue="Sr. Marketing Manager — Lumen Health" readOnly />
+                <label className="fld" htmlFor="empresa">Empresa</label>
+                <input className="txt" id="empresa" placeholder="Nombre de la empresa" />
               </div>
               <div>
-                <label className="fld" htmlFor="fecha">Fecha de la entrevista</label>
-                <input className="txt" id="fecha" defaultValue="Jueves 6 de agosto · 10:00 AM ET · Zoom · panel de 3" readOnly />
+                <label className="fld" htmlFor="posicion">Posición</label>
+                <input className="txt" id="posicion" placeholder="Título del puesto — ej. Sr. Marketing Manager" />
               </div>
             </div>
             <div style={{ marginTop: 16 }}>
+              <label className="fld" htmlFor="fecha">Fecha de la entrevista</label>
+              <input className="txt txt-date" id="fecha" type="date" aria-label="Fecha de la entrevista (MM/DD/AAAA)" />
+            </div>
+            <div style={{ marginTop: 16 }}>
               <label className="fld" htmlFor="jd">Job description</label>
-              <textarea className="txt" id="jd" rows={10} readOnly defaultValue={
-                "We're looking for a Senior Marketing Manager to own lifecycle and activation. Our signup volume has grown 3x YoY, but 60-day activation has stayed flat. You'll rebuild onboarding comms end to end, partner with Product on in-app education, and own the activation number..."
-              } />
+              <textarea className="txt" id="jd" rows={6} placeholder="Pega aquí el job description completo. La sala lee lo que la empresa realmente necesita, no solo el título del puesto." />
+            </div>
+
+            {/* collapsible interview configuration */}
+            <div className={`cfg${cfgOpen ? " open" : ""}`}>
+              <button
+                type="button"
+                className="cfg-head"
+                aria-expanded={cfgOpen}
+                onClick={() => setCfgOpen((v) => !v)}
+              >
+                <span className="cfg-title">
+                  <span className="cfg-ico" aria-hidden="true"><SlidersIcon /></span>
+                  <span className="cfg-title-full">Configuración de la entrevista</span>
+                  <span className="cfg-title-short">Configuración</span>
+                </span>
+                <span className="cfg-meta">
+                  Opcional
+                  <span className="chev">{cfgOpen ? "▴" : "▾"}</span>
+                </span>
+              </button>
+
+              {cfgOpen && (
+                <div className="cfg-body">
+                  <div className="cfg-group">
+                    <label className="fld">
+                      Etapa del proceso<span className="seg-q"> — ¿a quién vas a enfrentar?</span>
+                    </label>
+                    {/* desktop: segmented control */}
+                    <div className="segrow">
+                      {STAGES.map((s) => (
+                        <button
+                          key={s.v}
+                          type="button"
+                          className="seg"
+                          aria-pressed={stage === s.v}
+                          onClick={() => setStage(s.v)}
+                        >
+                          {s.full}
+                        </button>
+                      ))}
+                    </div>
+                    {/* mobile: vertical radio list */}
+                    <div className="vlist" role="radiogroup" aria-label="Etapa del proceso">
+                      {STAGES.map((s) => (
+                        <button
+                          key={s.v}
+                          type="button"
+                          className="vrow"
+                          role="radio"
+                          aria-checked={stage === s.v}
+                          onClick={() => setStage(s.v)}
+                        >
+                          <span className="rdot" aria-hidden="true" />
+                          <span className="vl">{s.short}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="cfg-group">
+                    <label className="fld" htmlFor="li">Perfil del entrevistador</label>
+                    <input
+                      className="txt"
+                      id="li"
+                      type="url"
+                      placeholder="https://linkedin.com/in/nombre-del-entrevistador"
+                      value={liUrl}
+                      onChange={(e) => setLiUrl(e.target.value)}
+                    />
+                    <input
+                      className="txt subtle"
+                      style={{ marginTop: 10 }}
+                      placeholder="Título / seniority (opcional) — ej. VP of Marketing"
+                    />
+                  </div>
+
+                  <div className="cfg-group">
+                    <label className="fld" htmlFor="tool">Herramientas y metodologías del rol</label>
+                    <div className="chips">
+                      {tools.map((t) => (
+                        <span className="chip" key={t}>
+                          {t}
+                          <button
+                            type="button"
+                            className="x"
+                            aria-label={`Quitar ${t}`}
+                            onClick={() => removeTool(t)}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                      <input
+                        id="tool"
+                        className="chipinput"
+                        placeholder="+ Agregar…"
+                        value={toolDraft}
+                        onChange={(e) => setToolDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addTool();
+                          }
+                        }}
+                      />
+                    </div>
+                    <p className="hint">La sala usa esto para hacer preguntas técnicas realistas y afinar tu vocabulario.</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
