@@ -249,30 +249,30 @@ export default function MemberArea() {
               </p>
             </div>
 
-            <div className="card dark stack">
+            <div className="card dark stack sabe-card">
               <h2 className="sect" style={{ color: "#fff" }}>Lo que la sala ya sabe de ti</h2>
               <div className="steps-prog">
                 <div className="pstep">
                   <span className="pdot done" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                   </span>
                   <div className="pbody">
-                    <div className="pt">Hoja de Vida</div>
-                    <div className="ps done">Completado</div>
+                    <span className="pt">Hoja de Vida</span>
+                    <span className="ps done">Completado</span>
                   </div>
                 </div>
                 <div className="pstep">
                   <span className="pdot todo" aria-hidden="true">2</span>
                   <div className="pbody">
-                    <div className="pt">Conocimientos</div>
-                    <button type="button" className="plink">Agrega tus conocimientos →</button>
+                    <span className="pt">Conocimientos</span>
+                    <button type="button" className="plink">Completar →</button>
                   </div>
                 </div>
                 <div className="pstep">
                   <span className="pdot todo" aria-hidden="true">3</span>
                   <div className="pbody">
-                    <div className="pt">Logros</div>
-                    <button type="button" className="plink">Suma tus logros →</button>
+                    <span className="pt">Logros</span>
+                    <button type="button" className="plink">Completar →</button>
                   </div>
                 </div>
               </div>

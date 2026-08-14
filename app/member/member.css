@@ -741,35 +741,39 @@
 }
 .tir .txt.subtle { background: #f3f3f7; }
 
-/* ---------- progress stepper (dark card, "lo que la sala sabe") ---------- */
-.tir .steps-prog { margin-top: 4px; }
+/* ---------- progress stepper (compact, dark card ≤150px) ---------- */
+.tir .sabe-card { padding: 14px 18px; }
+.tir .sabe-card .sect { font-size: 18px; line-height: 1.2; }
+.tir .sabe-card.stack > * + * { margin-top: 8px; }
+.tir .steps-prog { margin-top: 2px; }
 .tir .pstep {
   position: relative;
   display: grid;
-  grid-template-columns: 34px 1fr;
-  gap: 14px;
-  padding-bottom: 22px;
+  grid-template-columns: 24px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 8px;
 }
 .tir .pstep:last-child { padding-bottom: 0; }
 .tir .pstep::before {
   content: "";
   position: absolute;
-  left: 16px;
-  top: 36px;
+  left: 11px;
+  top: 24px;
   bottom: 0;
   width: 2px;
   background: #3a3a42;
 }
 .tir .pstep:last-child::before { display: none; }
 .tir .pdot {
-  width: 34px;
-  height: 34px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: "IBM Plex Mono", monospace;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
 }
 .tir .pdot.done { background: var(--mark); color: var(--ink); }
@@ -778,14 +782,20 @@
   border: 2px solid #4b4b55;
   color: #9c9ca8;
 }
-.tir .pbody { padding-top: 6px; }
-.tir .pbody .pt { font-size: 14.5px; font-weight: 600; color: var(--paper); }
+.tir .pbody {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+.tir .pbody .pt { font-size: 13.5px; font-weight: 600; color: var(--paper); }
 .tir .pbody .ps {
   font-family: "IBM Plex Mono", monospace;
   font-size: 11px;
   letter-spacing: 0.04em;
   color: #9c9ca8;
-  margin-top: 3px;
+  white-space: nowrap;
 }
 .tir .pbody .ps.done { color: var(--mark); }
 .tir .plink {
@@ -793,12 +803,12 @@
   background: none;
   border: 0;
   padding: 0;
-  margin-top: 3px;
   cursor: pointer;
   font-family: "Poppins", sans-serif;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--mark);
+  white-space: nowrap;
   border-bottom: 1px solid transparent;
   transition: 0.15s;
 }
