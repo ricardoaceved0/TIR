@@ -243,24 +243,6 @@ export default function MemberArea() {
         </div>
       </nav>
 
-      <div className="ribbon">
-        <div className="ribbon-in">
-          <span>
-            <span className="dot" />
-            VALENTINA R. · THE RE-ENTRY
-          </span>
-          <span>
-            <span className="k">memoria:</span> 4 historias guardadas · 6 sesiones
-          </span>
-          <span>
-            <span className="k">rol activo:</span> Sr. Marketing Manager — Lumen Health
-          </span>
-          <span>
-            <span className="k">última sesión:</span> hace 2 días
-          </span>
-        </div>
-      </div>
-
       <div className="shell">
         {/* ═══════════ 01 ENTRADA ═══════════ */}
         <section className={`screen${view === "s1" ? " on" : ""}`} id="s1">
