@@ -13,15 +13,6 @@ const STEPS: { id: ScreenId; num: string; lbl: string }[] = [
   { id: "s5", num: "05", lbl: "Story Bank" },
 ];
 
-const ARCHETYPES = [
-  { no: "01", nm: "The Re-Entry", ds: "Vuelves después de un layoff, una pausa o una licencia de maternidad." },
-  { no: "02", nm: "The Rebuilder", ds: "Reconstruiste tu carrera después de migrar y ahora vas por lo que vales." },
-  { no: "03", nm: "The Pivot", ds: "Cambias de industria y necesitas traducir tu experiencia anterior." },
-  { no: "04", nm: "The Experienced", ds: "Una década de experiencia en otro mercado y en otro idioma." },
-  { no: "05", nm: "The Rusty One", ds: "Tu última entrevista fue hace diez años. El formato cambió." },
-  { no: "06", nm: "The Invisible One", ds: "Dijiste todo, pero no te vieron. Nombrar no es narrar." },
-];
-
 const MODES = ["Conductual", "Técnica", "Panel", "Promoción interna", "Hostil"];
 
 const STAGES = [
@@ -109,7 +100,6 @@ function Seal() {
 
 export default function MemberArea() {
   const [view, setView] = useState<ScreenId>("s1");
-  const [arch, setArch] = useState("01");
   const [mode, setMode] = useState("Conductual");
   const [answer, setAnswer] = useState(RAW_ANSWER);
   const [activeNote, setActiveNote] = useState<string | null>(null);
@@ -243,24 +233,6 @@ export default function MemberArea() {
         </div>
       </nav>
 
-      <div className="ribbon">
-        <div className="ribbon-in">
-          <span>
-            <span className="dot" />
-            VALENTINA R. · THE RE-ENTRY
-          </span>
-          <span>
-            <span className="k">memoria:</span> 4 historias guardadas · 6 sesiones
-          </span>
-          <span>
-            <span className="k">rol activo:</span> Sr. Marketing Manager — Lumen Health
-          </span>
-          <span>
-            <span className="k">última sesión:</span> hace 2 días
-          </span>
-        </div>
-      </div>
-
       <div className="shell">
         {/* ═══════════ 01 ENTRADA ═══════════ */}
         <section className={`screen${view === "s1" ? " on" : ""}`} id="s1">
@@ -277,32 +249,32 @@ export default function MemberArea() {
               </p>
             </div>
 
-            <div className="card dark stack">
+            <div className="card dark stack sabe-card">
               <h2 className="sect" style={{ color: "#fff" }}>Lo que la sala ya sabe de ti</h2>
-              <p className="lede">De tu clase, tu workbook y tus sesiones anteriores. No empiezas de cero cada vez.</p>
-              <div className="agentline">
-                <span className="blink" />
-                <span>
-                  <b>Workbook de The Interview Edit™</b>
-                  <br />
-                  importado — tu estructura de 5 piezas está guardada
-                </span>
-              </div>
-              <div className="agentline">
-                <span className="blink" />
-                <span>
-                  <b>4 historias de bolsillo</b>
-                  <br />
-                  escritas en las sesiones del 12 y 19 de julio
-                </span>
-              </div>
-              <div className="agentline">
-                <span className="blink" />
-                <span>
-                  <b>Tu patrón recurrente</b>
-                  <br />
-                  bajas el volumen cuando hablas de resultados propios
-                </span>
+              <div className="steps-prog">
+                <div className="pstep">
+                  <span className="pdot done" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  </span>
+                  <div className="pbody">
+                    <span className="pt">Hoja de Vida</span>
+                    <span className="ps done">Completado</span>
+                  </div>
+                </div>
+                <div className="pstep">
+                  <span className="pdot todo" aria-hidden="true">2</span>
+                  <div className="pbody">
+                    <span className="pt">Conocimientos</span>
+                    <button type="button" className="plink">Completar →</button>
+                  </div>
+                </div>
+                <div className="pstep">
+                  <span className="pdot todo" aria-hidden="true">3</span>
+                  <div className="pbody">
+                    <span className="pt">Logros</span>
+                    <button type="button" className="plink">Completar →</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -440,27 +412,8 @@ export default function MemberArea() {
             </div>
           </div>
 
-          <div className="kicker-rule" />
-
-          <div className="eyebrow">Tu momento — puedes cambiarlo cuando cambie tu situación</div>
-          <div className="arch-grid">
-            {ARCHETYPES.map((a) => (
-              <button
-                key={a.no}
-                className="arch"
-                aria-pressed={arch === a.no}
-                onClick={() => setArch(a.no)}
-              >
-                <span className="no">{a.no}</span>
-                <span className="nm">{a.nm}</span>
-                <span className="ds">{a.ds}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="row-actions">
-            <button className="btn" onClick={() => go("s2")}>Leer el job description →</button>
-            <button className="btn ghost" onClick={() => go("s3")}>Ir directo a practicar</button>
+          <div className="row-actions end">
+            <button className="btn" onClick={() => go("s2")}>Enviar</button>
           </div>
         </section>
 
