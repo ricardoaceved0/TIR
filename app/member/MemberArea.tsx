@@ -419,7 +419,6 @@ export default function MemberArea() {
 
         {/* ═══════════ 02 DIAGNÓSTICO ═══════════ */}
         <section className={`screen${view === "s2" ? " on" : ""}`} id="s2">
-          <div className="eyebrow">02 — Diagnóstico</div>
           <h1 className="display">
             No están buscando
             <br />
@@ -531,7 +530,6 @@ export default function MemberArea() {
 
         {/* ═══════════ 03 LA SALA ═══════════ */}
         <section className={`screen${view === "s3" ? " on" : ""}`} id="s3">
-          <div className="eyebrow">03 — La sala</div>
           <h1 className="display">
             Practica hoy la respuesta
             <br />
@@ -604,7 +602,6 @@ export default function MemberArea() {
 
         {/* ═══════════ 04 EL EDIT ═══════════ */}
         <section className={`screen${view === "s4" ? " on" : ""}`} id="s4">
-          <div className="eyebrow">04 — El edit</div>
           <h1 className="display">
             Lo que dijiste,
             <br />
@@ -746,7 +743,6 @@ export default function MemberArea() {
 
         {/* ═══════════ 05 STORY BANK ═══════════ */}
         <section className={`screen${view === "s5" ? " on" : ""}`} id="s5">
-          <div className="eyebrow">05 — Story Bank</div>
           <h1 className="display">
             Tu material.
             <br />
