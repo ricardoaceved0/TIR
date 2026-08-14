@@ -148,6 +148,32 @@ export default function MemberArea() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Diagnóstico: AI analysis state. On submit we jump to s2 and wait for the
+  // response. The API isn't wired yet, so this simulates the round-trip;
+  // replace the setTimeout with the real AI call when the endpoint exists.
+  const [aiState, setAiState] = useState<"idle" | "loading" | "done">("idle");
+  const [aiText, setAiText] = useState("");
+  const aiTimer = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (aiTimer.current) window.clearTimeout(aiTimer.current);
+  }, []);
+
+  const submitEntrada = () => {
+    const val = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value.trim() || "";
+    const empresa = val("empresa") || "la empresa";
+    const posicion = val("posicion") || "esta posición";
+    setAiText("");
+    setAiState("loading");
+    go("s2");
+    if (aiTimer.current) window.clearTimeout(aiTimer.current);
+    aiTimer.current = window.setTimeout(() => {
+      setAiText(
+        `Leí el job description para ${posicion} en ${empresa}. El patrón es claro: no están evaluando experiencia general, buscan a alguien que resuelva un problema concreto. Tu narrativa debe apuntar a ese problema desde la primera respuesta. Abajo tienes el desglose y tu set de preguntas.`
+      );
+      setAiState("done");
+    }, 2400);
+  };
+
   return (
     <div className="tir">
       <div className="ghost-bg" aria-hidden="true">
@@ -413,7 +439,7 @@ export default function MemberArea() {
           </div>
 
           <div className="row-actions end">
-            <button className="btn" onClick={() => go("s2")}>Enviar</button>
+            <button className="btn" onClick={submitEntrada}>Enviar</button>
           </div>
         </section>
 
@@ -426,6 +452,29 @@ export default function MemberArea() {
             <br />
             buscando <em>una solución.</em>
           </h1>
+
+          <div className="kicker-rule" />
+
+          <div className="ai-panel">
+            <div className="eyebrow">Análisis de la sala</div>
+            <div className={`ai-box ${aiState}`} aria-live="polite">
+              {aiState === "loading" && (
+                <>
+                  <div className="ai-loading-row">
+                    <span className="blink" />
+                    <span>Analizando tu entrevista…</span>
+                  </div>
+                  <div className="ai-shimmer" aria-hidden="true"><i /><i /><i /></div>
+                </>
+              )}
+              {aiState === "done" && <p className="ai-text">{aiText}</p>}
+              {aiState === "idle" && (
+                <p className="ai-empty">
+                  Completa <b>Entrada</b> y toca <b>Enviar</b> para ver aquí el análisis de la sala.
+                </p>
+              )}
+            </div>
+          </div>
 
           <div className="kicker-rule" />
 
