@@ -822,6 +822,46 @@
 .tir .seg[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 .tir .seg:focus-visible { outline: 3px solid var(--mark); outline-offset: -3px; }
 
+/* icon + title variants (gear/full = desktop, key/short = mobile) */
+.tir .cfg-ico { display: inline-flex; align-items: center; color: var(--muted); }
+.tir .cfg-ico-key { display: none; color: var(--ink); }
+.tir .cfg-title-short { display: none; }
+
+/* mobile vertical radio list (option B) — hidden on desktop */
+.tir .vlist { display: none; border: 1px solid var(--hair); border-radius: 8px; overflow: hidden; }
+.tir .vrow {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--paper);
+  border: 0;
+  border-bottom: 1px solid #e2e2e9;
+  padding: 15px;
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #3d3d45;
+  text-align: left;
+  transition: 0.15s;
+}
+.tir .vrow:last-child { border-bottom: 0; }
+.tir .vrow .rdot {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid #c6c6d2;
+  flex: none;
+}
+.tir .vrow[aria-checked="true"] { background: var(--ink); color: var(--paper); }
+.tir .vrow[aria-checked="true"] .rdot {
+  border-color: var(--mark);
+  background: radial-gradient(circle, var(--mark) 0 38%, transparent 42%);
+}
+.tir .vrow:focus-visible { outline: 3px solid var(--mark); outline-offset: -3px; }
+
 /* tool / methodology chips */
 .tir .chips {
   display: flex;
@@ -961,6 +1001,27 @@
   /* full-width, thumb-friendly action buttons */
   .tir .row-actions { flex-direction: column; align-items: stretch; }
   .tir .row-actions .btn { width: 100%; justify-content: center; }
+
+  /* interview-config header: key icon, short title, bigger chevron, taller tap area */
+  .tir .cfg-head { padding: 18px 16px; }
+  .tir .cfg-ico-gear { display: none; }
+  .tir .cfg-ico-key { display: inline-flex; }
+  .tir .cfg-title-full { display: none; }
+  .tir .cfg-title-short { display: inline; }
+  .tir .cfg-title {
+    gap: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: none;
+  }
+  .tir .cfg-meta { font-size: 12.5px; }
+  .tir .cfg-meta .chev { font-size: 22px; }
+
+  /* etapa: short label, swap segmented for vertical list */
+  .tir .seg-q { display: none; }
+  .tir .segrow { display: none; }
+  .tir .vlist { display: block; }
 }
 
 @media (prefers-reduced-motion: reduce) {

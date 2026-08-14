@@ -24,7 +24,12 @@ const ARCHETYPES = [
 
 const MODES = ["Conductual", "Técnica", "Panel", "Promoción interna", "Hostil"];
 
-const STAGES = ["Reclutador", "Jefe Directo", "Pares · Equipo", "Ronda Final · Ejecutivo"];
+const STAGES = [
+  { v: "Reclutador", full: "Reclutador", short: "Reclutador" },
+  { v: "Jefe Directo", full: "Jefe Directo", short: "Jefe Directo" },
+  { v: "Pares · Equipo", full: "Pares · Equipo", short: "Pares/Equipo" },
+  { v: "Ronda Final · Ejecutivo", full: "Ronda Final · Ejecutivo", short: "Ejecutivo" },
+];
 
 const NOTES: Record<string, [string, string]> = {
   disculpa: [
@@ -53,6 +58,14 @@ function GearIcon() {
     <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <circle cx="12" cy="12" r="3" />
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  );
+}
+
+function KeyIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
     </svg>
   );
 }
@@ -121,7 +134,7 @@ export default function MemberArea() {
 
   // Entrada: collapsible interview-configuration section
   const [cfgOpen, setCfgOpen] = useState(false);
-  const [stage, setStage] = useState(STAGES[0]);
+  const [stage, setStage] = useState(STAGES[0].v);
   const [liUrl, setLiUrl] = useState("");
   const [tools, setTools] = useState(["HubSpot", "Braze", "SQL", "Amplitude", "Agile"]);
   const [toolDraft, setToolDraft] = useState("");
@@ -319,12 +332,13 @@ export default function MemberArea() {
                 onClick={() => setCfgOpen((v) => !v)}
               >
                 <span className="cfg-title">
-                  <span className="cfg-ico" aria-hidden="true">⚙</span> Configuración de la entrevista
+                  <span className="cfg-ico cfg-ico-gear" aria-hidden="true">⚙</span>
+                  <span className="cfg-ico cfg-ico-key" aria-hidden="true"><KeyIcon /></span>
+                  <span className="cfg-title-full">Configuración de la entrevista</span>
+                  <span className="cfg-title-short">Configuración</span>
                 </span>
                 <span className="cfg-meta">
-                  {cfgOpen
-                    ? `${stage} · ${tools.length} herramientas`
-                    : "Opcional · afina la sala para esta entrevista"}
+                  Opcional
                   <span className="chev">{cfgOpen ? "▴" : "▾"}</span>
                 </span>
               </button>
@@ -332,17 +346,36 @@ export default function MemberArea() {
               {cfgOpen && (
                 <div className="cfg-body">
                   <div className="cfg-group">
-                    <label className="fld">Etapa del proceso — ¿a quién vas a enfrentar?</label>
+                    <label className="fld">
+                      Etapa del proceso<span className="seg-q"> — ¿a quién vas a enfrentar?</span>
+                    </label>
+                    {/* desktop: segmented control */}
                     <div className="segrow">
                       {STAGES.map((s) => (
                         <button
-                          key={s}
+                          key={s.v}
                           type="button"
                           className="seg"
-                          aria-pressed={stage === s}
-                          onClick={() => setStage(s)}
+                          aria-pressed={stage === s.v}
+                          onClick={() => setStage(s.v)}
                         >
-                          {s}
+                          {s.full}
+                        </button>
+                      ))}
+                    </div>
+                    {/* mobile: vertical radio list */}
+                    <div className="vlist" role="radiogroup" aria-label="Etapa del proceso">
+                      {STAGES.map((s) => (
+                        <button
+                          key={s.v}
+                          type="button"
+                          className="vrow"
+                          role="radio"
+                          aria-checked={stage === s.v}
+                          onClick={() => setStage(s.v)}
+                        >
+                          <span className="rdot" aria-hidden="true" />
+                          <span className="vl">{s.short}</span>
                         </button>
                       ))}
                     </div>
