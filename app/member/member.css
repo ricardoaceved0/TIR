@@ -739,6 +739,134 @@
 @media (max-width: 640px) {
   .tir .entrada-form-row { grid-template-columns: 1fr; }
 }
+.tir .txt.subtle { background: #f3f3f7; }
+
+/* ---------- interview configuration (collapsible) ---------- */
+.tir .cfg {
+  margin-top: 22px;
+  border: 1px solid #c6c6d2;
+  border-radius: 10px;
+  background: #f3f3f7;
+  overflow: hidden;
+}
+.tir .cfg.open { background: var(--paper); border-color: var(--hair); }
+.tir .cfg-head {
+  width: 100%;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  font-family: "Poppins", sans-serif;
+}
+.tir .cfg-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.tir .cfg-ico { color: var(--muted); }
+.tir .cfg-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-align: right;
+}
+.tir .cfg-meta .chev { font-size: 13px; }
+.tir .cfg-head:focus-visible { outline: 3px solid var(--mark); outline-offset: -3px; }
+.tir .cfg-body {
+  padding: 4px 18px 20px;
+  border-top: 1px solid #e2e2e9;
+  animation: tir-rise 0.28s ease both;
+}
+.tir .cfg-group + .cfg-group { margin-top: 18px; }
+.tir .cfg-group:first-child { margin-top: 14px; }
+
+/* segmented process-stage control */
+.tir .segrow {
+  display: flex;
+  border: 1px solid var(--hair);
+  border-radius: 6px;
+  overflow: hidden;
+  flex-wrap: wrap;
+}
+.tir .seg {
+  flex: 1;
+  min-width: 120px;
+  background: var(--paper);
+  border: 0;
+  border-right: 1px solid #d8d8e0;
+  padding: 12px 10px;
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: 0.18s;
+}
+.tir .seg:last-child { border-right: 0; }
+.tir .seg:hover { background: var(--wash); color: var(--ink); }
+.tir .seg[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.tir .seg:focus-visible { outline: 3px solid var(--mark); outline-offset: -3px; }
+
+/* tool / methodology chips */
+.tir .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  background: var(--wash);
+  border: 1px solid #c6c6d2;
+  border-radius: 6px;
+  padding: 10px 12px;
+}
+.tir .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  padding: 6px 10px;
+  border-radius: 99px;
+}
+.tir .chip .x {
+  appearance: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: #c9c9d2;
+  font-size: 13px;
+  line-height: 1;
+  padding: 0;
+}
+.tir .chip .x:hover { color: var(--mark); }
+.tir .chipinput {
+  flex: 1;
+  min-width: 130px;
+  border: 0;
+  background: transparent;
+  font-family: "Poppins", sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+  padding: 5px 2px;
+}
+.tir .chipinput:focus { outline: none; }
 .tir .two { display: grid; grid-template-columns: 1.35fr 1fr; gap: 22px; align-items: start; }
 .tir .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .tir .agentline {

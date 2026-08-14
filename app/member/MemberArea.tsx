@@ -24,6 +24,8 @@ const ARCHETYPES = [
 
 const MODES = ["Conductual", "Técnica", "Panel", "Promoción interna", "Hostil"];
 
+const STAGES = ["Reclutador", "Jefe Directo", "Pares · Equipo", "Ronda Final · Ejecutivo"];
+
 const NOTES: Record<string, [string, string]> = {
   disculpa: [
     "Ownership, sin disculpa",
@@ -116,6 +118,19 @@ export default function MemberArea() {
   useEffect(() => () => {
     if (navLabelTimer.current) window.clearTimeout(navLabelTimer.current);
   }, []);
+
+  // Entrada: collapsible interview-configuration section
+  const [cfgOpen, setCfgOpen] = useState(false);
+  const [stage, setStage] = useState(STAGES[0]);
+  const [liUrl, setLiUrl] = useState("");
+  const [tools, setTools] = useState(["HubSpot", "Braze", "SQL", "Amplitude", "Agile"]);
+  const [toolDraft, setToolDraft] = useState("");
+  const addTool = () => {
+    const t = toolDraft.trim();
+    if (t && !tools.includes(t)) setTools([...tools, t]);
+    setToolDraft("");
+  };
+  const removeTool = (t: string) => setTools(tools.filter((x) => x !== t));
 
   const go = (id: ScreenId) => {
     setView(id);
@@ -276,19 +291,114 @@ export default function MemberArea() {
           <div className="card entrada-form">
             <div className="entrada-form-row">
               <div>
-                <label className="fld" htmlFor="rol">Rol y empresa</label>
-                <input className="txt" id="rol" defaultValue="Sr. Marketing Manager — Lumen Health" readOnly />
+                <label className="fld" htmlFor="empresa">Empresa</label>
+                <input className="txt" id="empresa" defaultValue="Lumen Health" />
               </div>
               <div>
-                <label className="fld" htmlFor="fecha">Fecha de la entrevista</label>
-                <input className="txt" id="fecha" defaultValue="Jueves 6 de agosto · 10:00 AM ET · Zoom · panel de 3" readOnly />
+                <label className="fld" htmlFor="posicion">Posición</label>
+                <input className="txt" id="posicion" defaultValue="Sr. Marketing Manager" />
               </div>
             </div>
             <div style={{ marginTop: 16 }}>
+              <label className="fld" htmlFor="fecha">Fecha de la entrevista</label>
+              <input className="txt" id="fecha" defaultValue="Jueves 6 de agosto · 10:00 AM ET · Zoom · panel de 3" />
+            </div>
+            <div style={{ marginTop: 16 }}>
               <label className="fld" htmlFor="jd">Job description</label>
-              <textarea className="txt" id="jd" rows={10} readOnly defaultValue={
+              <textarea className="txt" id="jd" rows={6} defaultValue={
                 "We're looking for a Senior Marketing Manager to own lifecycle and activation. Our signup volume has grown 3x YoY, but 60-day activation has stayed flat. You'll rebuild onboarding comms end to end, partner with Product on in-app education, and own the activation number..."
               } />
+            </div>
+
+            {/* collapsible interview configuration */}
+            <div className={`cfg${cfgOpen ? " open" : ""}`}>
+              <button
+                type="button"
+                className="cfg-head"
+                aria-expanded={cfgOpen}
+                onClick={() => setCfgOpen((v) => !v)}
+              >
+                <span className="cfg-title">
+                  <span className="cfg-ico" aria-hidden="true">⚙</span> Configuración de la entrevista
+                </span>
+                <span className="cfg-meta">
+                  {cfgOpen
+                    ? `${stage} · ${tools.length} herramientas`
+                    : "Opcional · afina la sala para esta entrevista"}
+                  <span className="chev">{cfgOpen ? "▴" : "▾"}</span>
+                </span>
+              </button>
+
+              {cfgOpen && (
+                <div className="cfg-body">
+                  <div className="cfg-group">
+                    <label className="fld">Etapa del proceso — ¿a quién vas a enfrentar?</label>
+                    <div className="segrow">
+                      {STAGES.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          className="seg"
+                          aria-pressed={stage === s}
+                          onClick={() => setStage(s)}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="cfg-group">
+                    <label className="fld" htmlFor="li">Perfil del entrevistador</label>
+                    <input
+                      className="txt"
+                      id="li"
+                      type="url"
+                      placeholder="https://linkedin.com/in/nombre-del-entrevistador"
+                      value={liUrl}
+                      onChange={(e) => setLiUrl(e.target.value)}
+                    />
+                    <input
+                      className="txt subtle"
+                      style={{ marginTop: 10 }}
+                      placeholder="Título / seniority (opcional) — ej. VP of Marketing"
+                    />
+                  </div>
+
+                  <div className="cfg-group">
+                    <label className="fld" htmlFor="tool">Herramientas y metodologías del rol</label>
+                    <div className="chips">
+                      {tools.map((t) => (
+                        <span className="chip" key={t}>
+                          {t}
+                          <button
+                            type="button"
+                            className="x"
+                            aria-label={`Quitar ${t}`}
+                            onClick={() => removeTool(t)}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                      <input
+                        id="tool"
+                        className="chipinput"
+                        placeholder="+ Agregar…"
+                        value={toolDraft}
+                        onChange={(e) => setToolDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            addTool();
+                          }
+                        }}
+                      />
+                    </div>
+                    <p className="hint">La sala usa esto para hacer preguntas técnicas realistas y afinar tu vocabulario.</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
