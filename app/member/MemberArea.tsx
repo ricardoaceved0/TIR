@@ -62,10 +62,18 @@ function GearIcon() {
   );
 }
 
-function KeyIcon() {
+function SlidersIcon() {
   return (
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+      <line x1="4" y1="21" x2="4" y2="14" />
+      <line x1="4" y1="10" x2="4" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="12" />
+      <line x1="12" y1="8" x2="12" y2="3" />
+      <line x1="20" y1="21" x2="20" y2="16" />
+      <line x1="20" y1="12" x2="20" y2="3" />
+      <line x1="1" y1="14" x2="7" y2="14" />
+      <line x1="9" y1="8" x2="15" y2="8" />
+      <line x1="17" y1="16" x2="23" y2="16" />
     </svg>
   );
 }
@@ -305,22 +313,20 @@ export default function MemberArea() {
             <div className="entrada-form-row">
               <div>
                 <label className="fld" htmlFor="empresa">Empresa</label>
-                <input className="txt" id="empresa" defaultValue="Lumen Health" />
+                <input className="txt" id="empresa" placeholder="Nombre de la empresa" />
               </div>
               <div>
                 <label className="fld" htmlFor="posicion">Posición</label>
-                <input className="txt" id="posicion" defaultValue="Sr. Marketing Manager" />
+                <input className="txt" id="posicion" placeholder="Título del puesto — ej. Sr. Marketing Manager" />
               </div>
             </div>
             <div style={{ marginTop: 16 }}>
               <label className="fld" htmlFor="fecha">Fecha de la entrevista</label>
-              <input className="txt" id="fecha" defaultValue="Jueves 6 de agosto · 10:00 AM ET · Zoom · panel de 3" />
+              <input className="txt txt-date" id="fecha" type="date" aria-label="Fecha de la entrevista (MM/DD/AAAA)" />
             </div>
             <div style={{ marginTop: 16 }}>
               <label className="fld" htmlFor="jd">Job description</label>
-              <textarea className="txt" id="jd" rows={6} defaultValue={
-                "We're looking for a Senior Marketing Manager to own lifecycle and activation. Our signup volume has grown 3x YoY, but 60-day activation has stayed flat. You'll rebuild onboarding comms end to end, partner with Product on in-app education, and own the activation number..."
-              } />
+              <textarea className="txt" id="jd" rows={6} placeholder="Pega aquí el job description completo. La sala lee lo que la empresa realmente necesita, no solo el título del puesto." />
             </div>
 
             {/* collapsible interview configuration */}
@@ -333,7 +339,7 @@ export default function MemberArea() {
               >
                 <span className="cfg-title">
                   <span className="cfg-ico cfg-ico-gear" aria-hidden="true">⚙</span>
-                  <span className="cfg-ico cfg-ico-key" aria-hidden="true"><KeyIcon /></span>
+                  <span className="cfg-ico cfg-ico-key" aria-hidden="true"><SlidersIcon /></span>
                   <span className="cfg-title-full">Configuración de la entrevista</span>
                   <span className="cfg-title-short">Configuración</span>
                 </span>

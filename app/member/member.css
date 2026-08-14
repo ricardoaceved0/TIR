@@ -741,6 +741,15 @@
 }
 .tir .txt.subtle { background: #f3f3f7; }
 
+/* native date field: calendar icon on the right, typeable, MM/DD/YYYY */
+.tir .txt-date { appearance: none; min-height: 46px; }
+.tir .txt-date::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.55;
+  padding-left: 6px;
+}
+.tir .txt-date::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+
 /* ---------- interview configuration (collapsible) ---------- */
 .tir .cfg {
   margin-top: 22px;
