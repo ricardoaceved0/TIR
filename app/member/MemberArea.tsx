@@ -144,7 +144,7 @@ export default function MemberArea() {
   const [cfgOpen, setCfgOpen] = useState(false);
   const [stage, setStage] = useState(STAGES[0].v);
   const [liUrl, setLiUrl] = useState("");
-  const [tools, setTools] = useState(["HubSpot", "Braze", "SQL", "Amplitude", "Agile"]);
+  const [tools, setTools] = useState<string[]>([]);
   const [toolDraft, setToolDraft] = useState("");
   const addTool = () => {
     const t = toolDraft.trim();
@@ -338,8 +338,7 @@ export default function MemberArea() {
                 onClick={() => setCfgOpen((v) => !v)}
               >
                 <span className="cfg-title">
-                  <span className="cfg-ico cfg-ico-gear" aria-hidden="true">⚙</span>
-                  <span className="cfg-ico cfg-ico-key" aria-hidden="true"><SlidersIcon /></span>
+                  <span className="cfg-ico" aria-hidden="true"><SlidersIcon /></span>
                   <span className="cfg-title-full">Configuración de la entrevista</span>
                   <span className="cfg-title-short">Configuración</span>
                 </span>

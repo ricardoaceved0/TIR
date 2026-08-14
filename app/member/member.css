@@ -831,9 +831,8 @@
 .tir .seg[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 .tir .seg:focus-visible { outline: 3px solid var(--mark); outline-offset: -3px; }
 
-/* icon + title variants (gear/full = desktop, key/short = mobile) */
-.tir .cfg-ico { display: inline-flex; align-items: center; color: var(--muted); }
-.tir .cfg-ico-key { display: none; color: var(--ink); }
+/* config icon (sliders, unified across desktop + mobile) + title variants */
+.tir .cfg-ico { display: inline-flex; align-items: center; color: var(--ink); }
 .tir .cfg-title-short { display: none; }
 
 /* mobile vertical radio list (option B) — hidden on desktop */
@@ -1011,10 +1010,8 @@
   .tir .row-actions { flex-direction: column; align-items: stretch; }
   .tir .row-actions .btn { width: 100%; justify-content: center; }
 
-  /* interview-config header: key icon, short title, bigger chevron, taller tap area */
+  /* interview-config header: short title, bigger chevron, taller tap area */
   .tir .cfg-head { padding: 18px 16px; }
-  .tir .cfg-ico-gear { display: none; }
-  .tir .cfg-ico-key { display: inline-flex; }
   .tir .cfg-title-full { display: none; }
   .tir .cfg-title-short { display: inline; }
   .tir .cfg-title {
