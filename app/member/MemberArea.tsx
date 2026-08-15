@@ -448,22 +448,26 @@ export default function MemberArea() {
               </p>
             </div>
 
-            <div className="card dark stack needs-card">
+            <div className="card dark stack sabe-card needs-card">
               <h2 className="sect" style={{ color: "#fff" }}>Lo que necesita el puesto</h2>
               <div className="needs-list" aria-live="polite">
                 {aiState === "loading"
                   ? [0, 1, 2].map((i) => (
                       <div className="need skeleton" key={i} aria-hidden="true">
                         <span className="ring-skel" />
-                        <span className="bar-skel" />
-                        <span className="badge-skel" />
+                        <div className="need-body">
+                          <span className="bar-skel" />
+                          <span className="badge-skel" />
+                        </div>
                       </div>
                     ))
                   : DEFAULT_NEEDS.map((n) => (
                       <div className="need" key={n.key}>
                         <ProgressRing pct={n.match} />
-                        <span className="need-label">{n.label}</span>
-                        <span className={`need-match ${matchTier(n.match)}`}>{n.match}%</span>
+                        <div className="need-body">
+                          <span className="need-label">{n.label}</span>
+                          <span className={`need-match ${matchTier(n.match)}`}>{n.match}%</span>
+                        </div>
                       </div>
                     ))}
               </div>

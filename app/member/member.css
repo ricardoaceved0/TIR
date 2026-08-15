@@ -873,19 +873,25 @@
 }
 
 /* ---------- Diagnóstico · "Lo que necesita el puesto" ---------- */
+/* Mirrors the Entrada dark block (.sabe-card / .pstep / .pbody). */
 .tir .diag-hero .lede { margin-top: 16px; }
 .tir .needs-card { align-self: start; }
 .tir .needs-list { margin-top: 2px; }
 .tir .need {
   display: grid;
-  grid-template-columns: 36px 1fr auto;
+  grid-template-columns: 36px 1fr;
   gap: 13px;
   align-items: center;
-  padding: 13px 0;
-  border-top: 1px solid #33333c;
+  padding-bottom: 15px;
 }
-.tir .need:first-child { border-top: 0; padding-top: 4px; }
 .tir .need:last-child { padding-bottom: 0; }
+.tir .need-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
 .tir .need-label {
   font-size: 13.5px;
   font-weight: 600;
@@ -919,9 +925,6 @@
 .tir .ring-arc.lo { stroke: #c97f7f; }
 
 /* skeleton (shimmer) while the model reads the JD */
-.tir .need.skeleton {
-  grid-template-columns: 36px 1fr auto;
-}
 .tir .need.skeleton .ring-skel {
   width: 36px;
   height: 36px;
