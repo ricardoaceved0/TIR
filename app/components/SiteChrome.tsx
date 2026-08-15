@@ -28,6 +28,16 @@ export function Seal() {
   );
 }
 
+function GhostIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 21V9a7 7 0 0 1 14 0v12l-2.5-1.8L14 21l-2-1.8L10 21l-2.5-1.8L5 21z" />
+      <circle cx="9.3" cy="10.5" r="1.15" fill="currentColor" stroke="none" />
+      <circle cx="14.7" cy="10.5" r="1.15" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 function GearIcon() {
   return (
     <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -81,6 +91,9 @@ export function SiteHeader({
         )}
 
         <div className="hdr-actions">
+          <a className="hdr-btn" href="/studio" aria-label="Backend · Prompt Studio" title="Backend · Prompt Studio">
+            <GhostIcon />
+          </a>
           <button className="hdr-btn" aria-label="Ajustes" title="Ajustes">
             <GearIcon />
           </button>
