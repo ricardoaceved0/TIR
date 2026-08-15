@@ -1,0 +1,371 @@
+/* ============================================================
+   /profile — layers on the shared design system (member.css).
+   All rules scoped under `.tir`; uses the design tokens.
+   ============================================================ */
+
+.tir .pf { padding-top: 36px; }
+.tir .pf-hero { margin-bottom: 8px; }
+.tir .pf-hero .display { margin-top: 4px; }
+
+/* auth-not-wired banner */
+.tir .pf-authbanner {
+  margin: 18px 0 4px;
+  padding: 13px 16px;
+  border: 1px solid var(--wash-deep);
+  border-left: 3px solid var(--mark);
+  border-radius: 8px;
+  background: var(--paper);
+  font-size: 13px;
+  line-height: 1.5;
+  color: #3d3d45;
+}
+
+/* ---------- layout: nav rail + panel ---------- */
+.tir .pf-layout {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 26px;
+  align-items: start;
+  margin-top: 22px;
+}
+.tir .pf-nav {
+  position: sticky;
+  top: 92px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tir .pf-navitem {
+  appearance: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  transition: 0.16s;
+}
+.tir .pf-navitem:hover { background: var(--paper); }
+.tir .pf-navitem.on {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.tir .pf-navico {
+  flex: none;
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--wash);
+  color: var(--ink);
+}
+.tir .pf-navitem.on .pf-navico { background: var(--mark); color: var(--ink); }
+.tir .pf-navtext { display: flex; flex-direction: column; min-width: 0; }
+.tir .pf-navlabel { font-size: 14px; font-weight: 600; }
+.tir .pf-navsub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+.tir .pf-navitem.on .pf-navsub { color: #a8a8b4; }
+
+/* ---------- panel card ---------- */
+.tir .pf-panel {
+  background: var(--paper);
+  border: 1.5px solid var(--hair);
+  border-radius: var(--r);
+  padding: 28px;
+  min-height: 320px;
+}
+.tir .pf-panelhead { margin-bottom: 22px; }
+.tir .pf-panelhead .sect { font-size: 22px; }
+.tir .pf-panelhint {
+  margin-top: 8px;
+  font-size: 13.5px;
+  color: #3d3d45;
+  max-width: 58ch;
+}
+.tir .pf-help { font-size: 12px; color: var(--muted); margin-top: 7px; }
+.tir .pf-empty { font-size: 14px; color: var(--muted); }
+
+/* text-size preference (applied to .pf root) */
+.tir .pf[data-textsize="sm"] .pf-panelhint,
+.tir .pf[data-textsize="sm"] .pf-sample { font-size: 12.5px; }
+.tir .pf[data-textsize="lg"] .pf-panelhint,
+.tir .pf[data-textsize="lg"] .pf-sample { font-size: 16px; }
+.tir .pf[data-textsize="lg"] .pf-md { font-size: 13.5px; }
+.tir .pf[data-textsize="sm"] .pf-md { font-size: 11px; }
+
+/* ---------- Cuenta ---------- */
+.tir .pf-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+.tir .pf-avatar {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  flex: none;
+  overflow: hidden;
+  background: var(--mark);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 22px;
+  font-family: "IBM Plex Mono", monospace;
+}
+.tir .pf-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.tir .pf-fields { display: flex; flex-direction: column; gap: 16px; }
+.tir .pf-two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.tir .pf-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 24px;
+}
+.tir .pf-msg { font-family: "IBM Plex Mono", monospace; font-size: 12px; }
+.tir .pf-msg.ok { color: var(--ok); }
+.tir .pf-msg.err { color: #c0492f; }
+
+/* ---------- Mis CVs ---------- */
+.tir .pf-drop {
+  border: 1.5px dashed var(--wash-deep);
+  border-radius: 12px;
+  background: var(--wash);
+  padding: 30px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.16s;
+}
+.tir .pf-drop:hover,
+.tir .pf-drop.over { border-color: var(--ink); background: var(--paper); }
+.tir .pf-drop.busy { cursor: default; }
+.tir .pf-drop-title { font-size: 14.5px; font-weight: 600; }
+.tir .pf-drop-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.tir .pf-drop-busy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.tir .pf-cvlist { margin-top: 18px; display: flex; flex-direction: column; gap: 12px; }
+.tir .pf-cv {
+  border: 1px solid var(--wash-deep);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.tir .pf-cv-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 15px;
+  flex-wrap: wrap;
+}
+.tir .pf-cv-ico { color: var(--muted); display: inline-flex; }
+.tir .pf-cv-name { font-size: 13.5px; font-weight: 600; }
+.tir .pf-cv-badge {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--mark);
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+.tir .pf-cv-actions { margin-left: auto; display: flex; gap: 14px; }
+.tir .pf-linkbtn {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-family: "Poppins", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  border-bottom: 1px solid transparent;
+  transition: 0.15s;
+}
+.tir .pf-linkbtn:hover { border-bottom-color: var(--mark); }
+.tir .pf-md {
+  margin: 0;
+  padding: 16px;
+  border-top: 1px solid var(--wash-deep);
+  background: var(--wash);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #26262c;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 340px;
+  overflow: auto;
+}
+
+/* ---------- Preferencias ---------- */
+.tir .pf-pref {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 0;
+  border-top: 1px solid var(--wash-deep);
+}
+.tir .pf-pref:first-of-type { border-top: 0; padding-top: 4px; }
+.tir .pf-pref-label { display: flex; flex-direction: column; min-width: 0; }
+.tir .pf-pref-title { font-size: 14px; font-weight: 600; }
+.tir .pf-pref-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.tir .pf-seg {
+  display: inline-flex;
+  border: 1.5px solid var(--hair);
+  border-radius: 8px;
+  overflow: hidden;
+  flex: none;
+}
+.tir .pf-segbtn {
+  appearance: none;
+  cursor: pointer;
+  background: var(--paper);
+  border: 0;
+  border-left: 1px solid var(--wash-deep);
+  padding: 9px 15px;
+  font-family: "Poppins", sans-serif;
+  font-size: 12.5px;
+  color: var(--ink);
+  transition: 0.14s;
+  white-space: nowrap;
+}
+.tir .pf-segbtn:first-child { border-left: 0; }
+.tir .pf-segbtn[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.tir .pf-toggle {
+  appearance: none;
+  cursor: pointer;
+  flex: none;
+  width: 48px;
+  height: 28px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--wash-deep);
+  position: relative;
+  transition: 0.18s;
+}
+.tir .pf-toggle.on { background: var(--mark); }
+.tir .pf-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--paper);
+  transition: 0.18s;
+}
+.tir .pf-toggle.on .pf-knob { left: 23px; }
+.tir .pf-sample {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid var(--wash-deep);
+  font-size: 14px;
+  color: #3d3d45;
+}
+
+/* ---------- Subscripción ---------- */
+.tir .pf-plan { padding: 22px; }
+.tir .pf-plan-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 6px;
+}
+.tir .pf-plan-badge {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--mark);
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.tir .pf-plan-cta { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+.tir .pf-credits { margin-top: 22px; }
+.tir .pf-credits-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.tir .pf-credits-num {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 18px;
+  font-weight: 600;
+}
+.tir .pf-credits-num span { color: var(--muted); font-size: 13px; font-weight: 400; }
+.tir .pf-meter {
+  margin-top: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--wash-deep);
+  overflow: hidden;
+}
+.tir .pf-meter i { display: block; height: 100%; background: var(--mark); }
+.tir .pf-billing { margin-top: 26px; }
+.tir .pf-bill-row {
+  display: grid;
+  grid-template-columns: 110px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid var(--wash-deep);
+  font-size: 13px;
+}
+.tir .pf-bill-date { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--muted); }
+.tir .pf-bill-amt { font-family: "IBM Plex Mono", monospace; font-weight: 600; }
+
+/* reduce-motion preference: kill animations app-wide */
+.tir-reduce-motion .tir *,
+.tir-reduce-motion .tir *::before,
+.tir-reduce-motion .tir *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+/* ---------- mobile: rail → horizontal pill row ---------- */
+@media (max-width: 760px) {
+  .tir .pf-layout { grid-template-columns: 1fr; gap: 16px; }
+  .tir .pf-nav {
+    position: static;
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .tir .pf-nav::-webkit-scrollbar { display: none; }
+  .tir .pf-navitem { flex: none; padding: 10px 12px; }
+  .tir .pf-navsub { display: none; }
+  .tir .pf-panel { padding: 20px; }
+  .tir .pf-two { grid-template-columns: 1fr; }
+  .tir .pf-bill-row { grid-template-columns: 1fr auto; }
+  .tir .pf-bill-detail { grid-column: 1 / -1; order: 3; color: var(--muted); font-size: 12px; }
+}
