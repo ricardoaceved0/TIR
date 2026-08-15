@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import "./member.css";
+import { SiteHeader, SiteFooter } from "@/app/components/SiteChrome";
 
 type ScreenId = "s1" | "s2" | "s3" | "s4" | "s5";
 
@@ -44,15 +45,6 @@ const NOTES: Record<string, [string, string]> = {
 const RAW_ANSWER =
   "So, um, I took some time off after my daughter was born — about fourteen months — and I know that's a bit of a gap. Before that I was at Meridian for four years, where I was a hard worker and I handled marketing for a few product lines. I'm really passionate about health tech and I think I could bring a lot to this role.";
 
-function GearIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-    </svg>
-  );
-}
-
 function SlidersIcon() {
   return (
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -65,35 +57,6 @@ function SlidersIcon() {
       <line x1="1" y1="14" x2="7" y2="14" />
       <line x1="9" y1="8" x2="15" y2="8" />
       <line x1="17" y1="16" x2="23" y2="16" />
-    </svg>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-    </svg>
-  );
-}
-
-function Seal() {
-  return (
-    <svg className="seal" width="52" height="52" viewBox="0 0 100 100" aria-hidden="true">
-      <defs>
-        <path id="tir-ring" d="M50,50 m-36,0 a36,36 0 1,1 72,0 a36,36 0 1,1 -72,0" />
-      </defs>
-      <circle cx="50" cy="50" r="45" fill="none" stroke="#fff" strokeWidth="1" />
-      <circle cx="50" cy="50" r="41" fill="none" stroke="#fff" strokeWidth=".5" />
-      <text fill="#fff" fontFamily="Poppins,sans-serif" fontSize="8.2" letterSpacing="1.5">
-        <textPath href="#tir-ring" startOffset="4%">
-          THE INTERVIEW ROOM • THE INTERVIEW ROOM •
-        </textPath>
-      </text>
-      <text x="50" y="60" textAnchor="middle" fill="#fff" fontFamily="Playfair Display,serif" fontSize="30" letterSpacing="-1">
-        IR
-      </text>
     </svg>
   );
 }
@@ -204,33 +167,7 @@ export default function MemberArea() {
         <span className="g10">say it again</span>
       </div>
 
-      <header className="bar">
-        <div className="bar-in">
-          <button className="brand" onClick={() => go("s1")} aria-label="Ir al inicio">
-            <Seal />
-            <div>
-              <div className="wordmark">
-                The Interview <em>Room</em>
-                <sup>™</sup>
-              </div>
-              <div className="byline">con Mariana &amp; Graciela Atencio</div>
-            </div>
-          </button>
-
-          <div className="hdr-actions">
-            <button className="hdr-btn" aria-label="Ajustes" title="Ajustes">
-              <GearIcon />
-            </button>
-            <button className="hdr-btn bell" aria-label="Notificaciones" title="Notificaciones">
-              <BellIcon />
-              <span className="bell-dot" aria-hidden="true" />
-            </button>
-            <button className="hdr-btn avatar" aria-label="Tu perfil" title="Tu perfil">
-              VR
-            </button>
-          </div>
-        </div>
-      </header>
+      <SiteHeader onBrand={() => go("s1")} avatar="VR" />
 
       <nav className="steps" role="tablist" aria-label="Etapas">
         <div className="steps-in">
@@ -922,9 +859,7 @@ export default function MemberArea() {
           </div>
         </section>
 
-        <footer className="foot">
-          The Interview Room™ — spinoff de The Interview Edit™ con Mariana &amp; Graciela Atencio
-        </footer>
+        <SiteFooter />
       </div>
     </div>
   );
