@@ -148,30 +148,45 @@ export default function MemberArea() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Diagnóstico: AI analysis state. On submit we jump to s2 and wait for the
-  // response. The API isn't wired yet, so this simulates the round-trip;
-  // replace the setTimeout with the real AI call when the endpoint exists.
+  // Diagnóstico: AI analysis state. On submit we jump to s2, POST the intake
+  // to /api/analyze, and drop the raw AI response into the .ai-box. The
+  // server mixes these inputs with the editable Prompt Studio config and
+  // calls the model — the API key never touches the browser.
   const [aiState, setAiState] = useState<"idle" | "loading" | "done">("idle");
   const [aiText, setAiText] = useState("");
-  const aiTimer = useRef<number | null>(null);
-  useEffect(() => () => {
-    if (aiTimer.current) window.clearTimeout(aiTimer.current);
-  }, []);
 
-  const submitEntrada = () => {
+  const submitEntrada = async () => {
     const val = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value.trim() || "";
-    const empresa = val("empresa") || "la empresa";
-    const posicion = val("posicion") || "esta posición";
+    const jd = (document.getElementById("jd") as HTMLTextAreaElement | null)?.value.trim() || "";
     setAiText("");
     setAiState("loading");
     go("s2");
-    if (aiTimer.current) window.clearTimeout(aiTimer.current);
-    aiTimer.current = window.setTimeout(() => {
+    try {
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          empresa: val("empresa"),
+          posicion: val("posicion"),
+          fecha: val("fecha"),
+          jobDescription: jd,
+          stage,
+          linkedinUrl: liUrl,
+          tools,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error || `HTTP ${res.status}`);
+      }
+      setAiText(data.text as string);
+      setAiState("done");
+    } catch (e) {
       setAiText(
-        `Leí el job description para ${posicion} en ${empresa}. El patrón es claro: no están evaluando experiencia general, buscan a alguien que resuelva un problema concreto. Tu narrativa debe apuntar a ese problema desde la primera respuesta. Abajo tienes el desglose y tu set de preguntas.`
+        `No pude generar el análisis. ${e instanceof Error ? e.message : "Intenta de nuevo."}`
       );
       setAiState("done");
-    }, 2400);
+    }
   };
 
   return (
