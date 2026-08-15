@@ -33,7 +33,7 @@ values (
   'Provide a structured preparation plan containing:' || chr(10) ||
   '1. Top 3 strengths to highlight for this specific round.' || chr(10) ||
   '2. 5 predicted questions tailored for a {{interview.stage}} interviewer.' || chr(10) ||
-  '2 reverse questions the candidate should ask the interviewer.'
+  '3. 2 reverse questions the candidate should ask the interviewer.'
 )
 on conflict (id) do nothing;
 
