@@ -94,16 +94,16 @@ export function SiteHeader({
           <a className="hdr-btn" href="/studio" aria-label="Backend · Prompt Studio" title="Backend · Prompt Studio">
             <GhostIcon />
           </a>
-          <button className="hdr-btn" aria-label="Ajustes" title="Ajustes">
+          <a className="hdr-btn" href="/profile#preferencias" aria-label="Preferencias" title="Preferencias">
             <GearIcon />
-          </button>
+          </a>
           <button className="hdr-btn bell" aria-label="Notificaciones" title="Notificaciones">
             <BellIcon />
             <span className="bell-dot" aria-hidden="true" />
           </button>
-          <button className="hdr-btn avatar" aria-label="Tu perfil" title="Tu perfil">
+          <a className="hdr-btn avatar" href="/profile" aria-label="Tu perfil" title="Tu perfil">
             {avatar}
-          </button>
+          </a>
         </div>
       </div>
     </header>

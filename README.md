@@ -23,8 +23,16 @@ that a candidate moves through to prepare for a specific interview.
 | 04 · El Edit | stage `s4` | The edit: highlighted answer, rubric, progress. |
 | 05 · Story Bank | stage `s5` | Deliverables, pocket stories, export kit. |
 
-The `/status` route keeps a live green/red check of the Supabase connection —
-handy for confirming your keys are wired up.
+Other routes:
+
+| Route | What it does |
+|-------|--------------|
+| `/profile` | Member account area (left-sidebar layout): **Cuenta** (name, avatar, email, password), **Mis CVs** (upload → Markdown), **Preferencias** (text size, language, motion), **Subscripción** (plan, credits, billing). Header profile → `/profile`, gear → `/profile#preferencias`. See **`docs/PROFILE_SETUP.md`**. |
+| `/studio` | Backend **Prompt Studio** — edits the prompt config the AI mixes with each intake. Header ghost icon → `/studio`. |
+| `/status` | Live green/red check of the Supabase connection. |
+
+`POST /api/cv/convert` converts an uploaded **PDF or DOCX** CV to Markdown
+server-side (mammoth + unpdf) — fully functional, no auth required.
 
 ### Project structure
 
@@ -34,13 +42,19 @@ app/
   member/
     MemberArea.tsx      The member-area client component (all 5 stages)
     member.css          Design tokens + styles (scoped under .tir)
+  components/SiteChrome.tsx   Shared header + footer (SiteHeader / SiteFooter)
+  profile/              /profile — account area (client) + profile.css
+  studio/               /studio — Prompt Studio (client) + studio.css
+  api/cv/convert/       CV → Markdown route (PDF + DOCX, server-side)
   status/page.tsx       Supabase connection check
   layout.tsx            Root layout
   globals.css           Global styles
 lib/supabase/           Browser/server clients + middleware helper
 middleware.ts           Session refresh on every request
+supabase/migrations/    SQL for the profile tables, RLS, and storage buckets
 docs/
-  AI_INTEGRATION_HANDOFF.md   How to wire the AI analysis (start a new session with this)
+  AI_INTEGRATION_HANDOFF.md   How to wire the AI analysis
+  PROFILE_SETUP.md            How to finish wiring /profile (auth, storage, subscriptions)
 ```
 
 ### Current state
