@@ -133,6 +133,7 @@
   color: inherit;
   font: inherit;
   text-align: left;
+  text-decoration: none;
   display: flex;
   align-items: center;
   gap: 18px;
@@ -863,6 +864,86 @@
 }
 .tir .plink:hover { border-bottom-color: var(--mark); }
 .tir .plink:focus-visible { outline: 3px solid var(--mark); outline-offset: 3px; }
+
+/* ---------- required-field marker ---------- */
+.tir .req {
+  color: var(--mark);
+  margin-left: 3px;
+  font-weight: 700;
+}
+
+/* ---------- Diagnóstico · "Lo que necesita el puesto" ---------- */
+.tir .diag-hero .lede { margin-top: 16px; }
+.tir .needs-card { align-self: start; }
+.tir .needs-list { margin-top: 2px; }
+.tir .need {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  gap: 13px;
+  align-items: center;
+  padding: 13px 0;
+  border-top: 1px solid #33333c;
+}
+.tir .need:first-child { border-top: 0; padding-top: 4px; }
+.tir .need:last-child { padding-bottom: 0; }
+.tir .need-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--paper);
+  min-width: 0;
+}
+.tir .need-match {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.tir .need-match.hi { color: var(--ink); background: var(--mark); }
+.tir .need-match.mid { color: #e7e7ee; background: #3d3d47; }
+.tir .need-match.lo { color: #f0c7c7; background: #4a3535; }
+
+/* progress ring */
+.tir .ring { flex: none; transform: rotate(0deg); }
+.tir .ring-track { fill: none; stroke: #3a3a42; stroke-width: 3; }
+.tir .ring-arc {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.6s ease;
+}
+.tir .ring-arc.hi { stroke: var(--mark); }
+.tir .ring-arc.mid { stroke: #c9c9d2; }
+.tir .ring-arc.lo { stroke: #c97f7f; }
+
+/* skeleton (shimmer) while the model reads the JD */
+.tir .need.skeleton {
+  grid-template-columns: 36px 1fr auto;
+}
+.tir .need.skeleton .ring-skel {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+.tir .need.skeleton .bar-skel {
+  height: 11px;
+  width: 60%;
+  border-radius: 5px;
+}
+.tir .need.skeleton .badge-skel {
+  height: 18px;
+  width: 44px;
+  border-radius: 999px;
+}
+.tir .need.skeleton .ring-skel,
+.tir .need.skeleton .bar-skel,
+.tir .need.skeleton .badge-skel {
+  background: linear-gradient(90deg, #2b2b33 0%, #3b3b45 50%, #2b2b33 100%);
+  background-size: 200% 100%;
+  animation: ai-sh 1.3s ease-in-out infinite;
+}
 
 /* native date field: calendar icon on the right, typeable, MM/DD/YYYY */
 .tir .txt-date { appearance: none; min-height: 46px; }

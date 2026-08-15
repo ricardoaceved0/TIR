@@ -45,6 +45,42 @@ const NOTES: Record<string, [string, string]> = {
 const RAW_ANSWER =
   "So, um, I took some time off after my daughter was born — about fourteen months — and I know that's a bit of a gap. Before that I was at Meridian for four years, where I was a hard worker and I handled marketing for a few product lines. I'm really passionate about health tech and I think I could bring a lot to this role.";
 
+type Need = { key: string; label: string; match: number };
+
+// Diagnóstico · "Lo que necesita el puesto". Placeholder categories shown until
+// the model returns structured requirements from the Job description. Future
+// integration: map the AI output onto { label, match } — `match` scores each
+// JD requirement against the candidate's Hoja de Vida (0–100).
+const DEFAULT_NEEDS: Need[] = [
+  { key: "technical", label: "Technical", match: 82 },
+  { key: "abilities", label: "Abilities", match: 64 },
+  { key: "degrees", label: "Title & Degrees", match: 91 },
+];
+
+function matchTier(pct: number) {
+  return pct >= 80 ? "hi" : pct >= 55 ? "mid" : "lo";
+}
+
+function ProgressRing({ pct }: { pct: number }) {
+  const r = 13;
+  const c = 2 * Math.PI * r;
+  const off = c * (1 - Math.max(0, Math.min(100, pct)) / 100);
+  return (
+    <svg className="ring" width="36" height="36" viewBox="0 0 36 36" aria-hidden="true">
+      <circle className="ring-track" cx="18" cy="18" r={r} />
+      <circle
+        className={`ring-arc ${matchTier(pct)}`}
+        cx="18"
+        cy="18"
+        r={r}
+        strokeDasharray={c}
+        strokeDashoffset={off}
+        transform="rotate(-90 18 18)"
+      />
+    </svg>
+  );
+}
+
 function SlidersIcon() {
   return (
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -262,12 +298,12 @@ export default function MemberArea() {
           <div className="card entrada-form">
             <div className="entrada-form-row">
               <div>
-                <label className="fld" htmlFor="empresa">Empresa</label>
-                <input className="txt" id="empresa" placeholder="Nombre de la empresa" />
+                <label className="fld" htmlFor="empresa">Empresa<span className="req" aria-hidden="true">*</span></label>
+                <input className="txt" id="empresa" placeholder="Nombre de la empresa" required aria-required="true" />
               </div>
               <div>
-                <label className="fld" htmlFor="posicion">Posición</label>
-                <input className="txt" id="posicion" placeholder="Título del puesto — ej. Sr. Marketing Manager" />
+                <label className="fld" htmlFor="posicion">Posición<span className="req" aria-hidden="true">*</span></label>
+                <input className="txt" id="posicion" placeholder="Título del puesto — ej. Sr. Marketing Manager" required aria-required="true" />
               </div>
             </div>
             <div style={{ marginTop: 16 }}>
@@ -275,8 +311,8 @@ export default function MemberArea() {
               <input className="txt txt-date" id="fecha" type="date" aria-label="Fecha de la entrevista (MM/DD/AAAA)" />
             </div>
             <div style={{ marginTop: 16 }}>
-              <label className="fld" htmlFor="jd">Job description</label>
-              <textarea className="txt" id="jd" rows={6} placeholder="Pega aquí el job description completo. La sala lee lo que la empresa realmente necesita, no solo el título del puesto." />
+              <label className="fld" htmlFor="jd">Job description<span className="req" aria-hidden="true">*</span></label>
+              <textarea className="txt" id="jd" rows={6} required aria-required="true" placeholder="Pega aquí el job description completo. La sala lee lo que la empresa realmente necesita, no solo el título del puesto." />
             </div>
 
             {/* collapsible interview configuration */}
@@ -397,13 +433,42 @@ export default function MemberArea() {
 
         {/* ═══════════ 02 DIAGNÓSTICO ═══════════ */}
         <section className={`screen${view === "s2" ? " on" : ""}`} id="s2">
-          <h1 className="display">
-            No están buscando
-            <br />
-            un currículum. Están
-            <br />
-            buscando <em>una solución.</em>
-          </h1>
+          <div className="two diag-hero">
+            <div>
+              <h1 className="display">
+                No están buscando
+                <br />
+                un currículum. Están
+                <br />
+                buscando <em>una solución.</em>
+              </h1>
+              <p className="lede">
+                La sala leyó el job description y lo tradujo a lo que de verdad te van a medir.
+                Esto es lo que el puesto exige — y qué tan cerca estás hoy según tu Hoja de Vida.
+              </p>
+            </div>
+
+            <div className="card dark stack needs-card">
+              <h2 className="sect" style={{ color: "#fff" }}>Lo que necesita el puesto</h2>
+              <div className="needs-list" aria-live="polite">
+                {aiState === "loading"
+                  ? [0, 1, 2].map((i) => (
+                      <div className="need skeleton" key={i} aria-hidden="true">
+                        <span className="ring-skel" />
+                        <span className="bar-skel" />
+                        <span className="badge-skel" />
+                      </div>
+                    ))
+                  : DEFAULT_NEEDS.map((n) => (
+                      <div className="need" key={n.key}>
+                        <ProgressRing pct={n.match} />
+                        <span className="need-label">{n.label}</span>
+                        <span className={`need-match ${matchTier(n.match)}`}>{n.match}%</span>
+                      </div>
+                    ))}
+              </div>
+            </div>
+          </div>
 
           <div className="kicker-rule" />
 
