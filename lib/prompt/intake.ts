@@ -9,23 +9,36 @@ export type Intake = {
   jobDescription: string;
   stage: string; // e.g. "Reclutador" | "Jefe Directo" | ...
   linkedinUrl: string; // may be ""
+  interviewerTitle: string; // may be ""
   tools: string[];
+  /** Candidate CV as Markdown (from /profile → Mis CVs). May be "". */
+  cvText: string;
   /** Language the AI should answer in. Defaults to Spanish. */
   preferredLanguage?: string;
 };
 
-/** Coerce an unknown request body into a safe Intake shape. */
+/** Coerce an unknown request body into a safe Intake shape. Accepts both the
+ *  member-area field names and the diagnostic aliases (cv_text, jd_text…). */
 export function normalizeIntake(input: unknown): Intake {
   const o = (input ?? {}) as Record<string, unknown>;
-  const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+  const str = (...vs: unknown[]) => {
+    for (const v of vs) if (typeof v === "string" && v.trim()) return v.trim();
+    return "";
+  };
   return {
-    empresa: str(o.empresa),
-    posicion: str(o.posicion),
-    fecha: str(o.fecha),
-    jobDescription: str(o.jobDescription),
+    empresa: str(o.empresa, o.company),
+    posicion: str(o.posicion, o.position),
+    fecha: str(o.fecha, o.interview_date),
+    jobDescription: str(o.jobDescription, o.jd_text),
     stage: str(o.stage),
-    linkedinUrl: str(o.linkedinUrl),
-    tools: Array.isArray(o.tools) ? o.tools.filter((t): t is string => typeof t === "string") : [],
+    linkedinUrl: str(o.linkedinUrl, o.interviewer_url),
+    interviewerTitle: str(o.interviewerTitle, o.interviewer_title),
+    tools: Array.isArray(o.tools)
+      ? o.tools.filter((t): t is string => typeof t === "string")
+      : typeof o.tools === "string" && o.tools.trim()
+      ? o.tools.split(",").map((t) => t.trim()).filter(Boolean)
+      : [],
+    cvText: str(o.cvText, o.cv_text),
     preferredLanguage: str(o.preferredLanguage) || "español",
   };
 }
@@ -33,15 +46,22 @@ export function normalizeIntake(input: unknown): Intake {
 /** Render the intake as the human-readable data block the AI analyzes. */
 export function intakeToText(intake: Intake): string {
   const lines = [
-    `Empresa: ${intake.empresa || "(no especificada)"}`,
-    `Posición: ${intake.posicion || "(no especificada)"}`,
-    `Fecha de la entrevista: ${intake.fecha || "(no especificada)"}`,
-    `Etapa del proceso: ${intake.stage || "(no especificada)"}`,
-    `Herramientas / metodologías del rol: ${intake.tools.length ? intake.tools.join(", ") : "(ninguna)"}`,
-    `LinkedIn del entrevistador: ${intake.linkedinUrl || "(no especificado)"}`,
+    "CANDIDATE CV (MARKDOWN):",
+    intake.cvText || "(no proporcionado)",
     "",
-    "Job description:",
+    `Herramientas / metodologías del candidato: ${intake.tools.length ? intake.tools.join(", ") : "(ninguna)"}`,
+    "",
+    "JOB DETAILS:",
+    `- Empresa: ${intake.empresa || "(no especificada)"}`,
+    `- Posición: ${intake.posicion || "(no especificada)"}`,
+    "- Job description:",
     intake.jobDescription || "(no proporcionado)",
+    "",
+    "CONTEXTO:",
+    `- Fecha de la entrevista: ${intake.fecha || "(no especificada)"}`,
+    `- Etapa del proceso: ${intake.stage || "(general)"}`,
+    `- Título del entrevistador: ${intake.interviewerTitle || "(no especificado)"}`,
+    `- LinkedIn del entrevistador: ${intake.linkedinUrl || "(no especificado)"}`,
   ];
   return lines.join("\n");
 }

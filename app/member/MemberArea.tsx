@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import "./member.css";
 import { SiteHeader, SiteFooter } from "@/app/components/SiteChrome";
+import { Diagnostic } from "@/lib/prompt/diagnostic";
 
 type ScreenId = "s1" | "s2" | "s3" | "s4" | "s5";
 
@@ -152,12 +153,14 @@ export default function MemberArea() {
   // server mixes these inputs with the editable Prompt Studio config and
   // calls the model — the API key never touches the browser.
   const [aiState, setAiState] = useState<"idle" | "loading" | "done">("idle");
-  const [aiText, setAiText] = useState("");
+  const [diagnostic, setDiagnostic] = useState<Diagnostic | null>(null);
+  const [aiError, setAiError] = useState("");
 
   const submitEntrada = async () => {
     const val = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value.trim() || "";
     const jd = (document.getElementById("jd") as HTMLTextAreaElement | null)?.value.trim() || "";
-    setAiText("");
+    setDiagnostic(null);
+    setAiError("");
     setAiState("loading");
     go("s2");
     try {
@@ -172,21 +175,32 @@ export default function MemberArea() {
           stage,
           linkedinUrl: liUrl,
           tools,
+          // TODO: attach the candidate's converted CV (from /profile → Mis CVs)
+          // once it's persisted, so box_1 scores against the real CV.
+          cv_text: "",
         }),
       });
       const data = await res.json().catch(() => null);
-      if (!res.ok || !data?.ok) {
+      if (!res.ok || !data?.ok || !data?.diagnostic) {
         throw new Error(data?.error || `HTTP ${res.status}`);
       }
-      setAiText(data.text as string);
+      setDiagnostic(data.diagnostic as Diagnostic);
       setAiState("done");
     } catch (e) {
-      setAiText(
-        `No pude generar el análisis. ${e instanceof Error ? e.message : "Intenta de nuevo."}`
-      );
+      setAiError(e instanceof Error ? e.message : "Intenta de nuevo.");
       setAiState("done");
     }
   };
+
+  const hasDx = aiState === "done" && !!diagnostic;
+  // box_1 → the three "Lo que necesita el puesto" rows
+  const dxNeeds: Need[] = diagnostic
+    ? [
+        { key: "technical", label: "Technical", match: diagnostic.box_1.technical_match },
+        { key: "abilities", label: "Abilities", match: diagnostic.box_1.abilities_match },
+        { key: "degrees", label: "Title & Degrees", match: diagnostic.box_1.titles_degrees_match },
+      ]
+    : DEFAULT_NEEDS;
 
   return (
     <div className="tir">
@@ -461,7 +475,7 @@ export default function MemberArea() {
                         </div>
                       </div>
                     ))
-                  : DEFAULT_NEEDS.map((n) => (
+                  : dxNeeds.map((n) => (
                       <div className="need" key={n.key}>
                         <ProgressRing pct={n.match} />
                         <div className="need-body">
@@ -474,123 +488,141 @@ export default function MemberArea() {
             </div>
           </div>
 
-          <div className="kicker-rule" />
+          {aiState === "done" && aiError && (
+            <>
+              <div className="kicker-rule" />
+              <div className="ai-panel">
+                <div className="eyebrow">Análisis de la sala</div>
+                <div className="ai-box done">
+                  <p className="ai-text" style={{ color: "#8a2f2f", fontFamily: "'Poppins',sans-serif", fontSize: 14 }}>
+                    No pude generar el análisis. {aiError}
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
 
-          <div className="ai-panel">
-            <div className="eyebrow">Análisis de la sala</div>
-            <div className={`ai-box ${aiState}`} aria-live="polite">
-              {aiState === "loading" && (
-                <>
-                  <div className="ai-loading-row">
-                    <span className="blink" />
-                    <span>Analizando tu entrevista…</span>
+          {/* ── Real diagnostic from the model ── */}
+          {hasDx && diagnostic && (
+            <>
+              <div className="kicker-rule" />
+              <div className="eyebrow">Tres cosas que hoy te cuestan el puesto</div>
+              <div style={{ marginTop: 10 }}>
+                <div className="entry">
+                  <div className="hd">
+                    <span className="term">El gap frente al puesto</span>
+                    <span className="sev hi">CRÍTICO</span>
                   </div>
-                  <div className="ai-shimmer" aria-hidden="true"><i /><i /><i /></div>
+                  <p className="def">{diagnostic.gap.identified_gap}</p>
+                  <p className="ev">{diagnostic.gap.mitigation_strategy}</p>
+                </div>
+                <div className="entry">
+                  <div className="hd">
+                    <span className="term">Adjetivo sin evidencia</span>
+                    <span className="sev">ALTO</span>
+                  </div>
+                  <p className="def">{diagnostic.adjetivo.weak_claim}</p>
+                  <p className="ev">{diagnostic.adjetivo.evidenced_upgrade}</p>
+                </div>
+                <div className="entry">
+                  <div className="hd">
+                    <span className="term">Tarea sin resultado</span>
+                    <span className="sev">MEDIO</span>
+                  </div>
+                  <p className="def">{diagnostic.resultado.task_focused_statement}</p>
+                  <p className="ev">{diagnostic.resultado.metric_driven_upgrade}</p>
+                </div>
+              </div>
+
+              {diagnostic.question_set.length > 0 && (
+                <>
+                  <div className="kicker-rule" />
+                  <div className="eyebrow">
+                    Tu set para esta entrevista — {diagnostic.question_set.length} preguntas
+                  </div>
+                  <div className="qset">
+                    {diagnostic.question_set.map((q) => (
+                      <div className="qitem" key={q.id}>
+                        <p className="qq">{q.question}</p>
+                        <p className="qw">{q.questions_why}</p>
+                      </div>
+                    ))}
+                  </div>
                 </>
               )}
-              {aiState === "done" && <p className="ai-text">{aiText}</p>}
-              {aiState === "idle" && (
-                <p className="ai-empty">
-                  Completa <b>Entrada</b> y toca <b>Enviar</b> para ver aquí el análisis de la sala.
+            </>
+          )}
+
+          {/* ── Idle preview (demo data) before you submit ── */}
+          {aiState === "idle" && (
+            <>
+              <div className="kicker-rule" />
+              <div className="card dark">
+                <div className="eyebrow" style={{ color: "#9c9ca8" }}>El problema real detrás de la vacante</div>
+                <h2 className="sect" style={{ color: "#fff" }}>
+                  Lumen Health no tiene un problema de tráfico.
+                  <br />
+                  Tiene un problema de activación.
+                </h2>
+                <p className="lede">
+                  Triplicaron signups y la activación a 60 días no se movió. Eso significa que quien
+                  entre a este puesto no será evaluado por campañas: será evaluado por retención
+                  temprana. Toda tu narrativa debe apuntar ahí.
                 </p>
-              )}
-            </div>
-          </div>
-
-          <div className="kicker-rule" />
-
-          <div className="card dark">
-            <div className="eyebrow" style={{ color: "#9c9ca8" }}>El problema real detrás de la vacante</div>
-            <h2 className="sect" style={{ color: "#fff" }}>
-              Lumen Health no tiene un problema de tráfico.
-              <br />
-              Tiene un problema de activación.
-            </h2>
-            <p className="lede">
-              Triplicaron signups y la activación a 60 días no se movió. Eso significa que quien
-              entre a este puesto no será evaluado por campañas: será evaluado por retención
-              temprana. Toda tu narrativa debe apuntar ahí.
-            </p>
-            <div className="agentline" style={{ marginTop: 18 }}>
-              <span className="blink" />
-              <span style={{ color: "#a8a8b4" }}>
-                Fuentes leídas: job description · sala de prensa · 2 reseñas de producto · perfil del hiring manager
-              </span>
-            </div>
-          </div>
-
-          <div className="kicker-rule" />
-
-          <div className="eyebrow">Tres cosas que hoy te cuestan el puesto</div>
-          <div style={{ marginTop: 10 }}>
-            <div className="entry">
-              <div className="hd">
-                <span className="term">el gap sin marco</span>
-                <span className="ipa">/el ɡap sin ˈmaɾko/</span>
-                <span className="pos">sust.</span>
-                <span className="sev hi">CRÍTICO</span>
+                <div className="agentline" style={{ marginTop: 18 }}>
+                  <span className="blink" />
+                  <span style={{ color: "#a8a8b4" }}>
+                    Ejemplo · completa Entrada y toca Enviar para tu diagnóstico real
+                  </span>
+                </div>
               </div>
-              <p className="def">
-                Cuentas los catorce meses en orden cronológico, como si hubieran pasado. No como
-                una decisión que tomaste y de la que volviste con un criterio nuevo. El
-                entrevistador no está juzgando el tiempo: está midiendo si tú lo juzgas.
-              </p>
-              <p className="ev">
-                En tu sesión del 19 de julio empezaste esa respuesta con <em>“I know that's a bit of a gap”</em>. Esa frase le enseña al panel a verlo como un problema.
-              </p>
-            </div>
 
-            <div className="entry">
-              <div className="hd">
-                <span className="term">adjetivo sin evidencia</span>
-                <span className="ipa">/aðxeˈtiβo sin eβiˈðenθja/</span>
-                <span className="pos">sust.</span>
-                <span className="sev">ALTO</span>
+              <div className="kicker-rule" />
+
+              <div className="eyebrow">Tres cosas que hoy te cuestan el puesto</div>
+              <div style={{ marginTop: 10 }}>
+                <div className="entry">
+                  <div className="hd">
+                    <span className="term">el gap sin marco</span>
+                    <span className="ipa">/el ɡap sin ˈmaɾko/</span>
+                    <span className="pos">sust.</span>
+                    <span className="sev hi">CRÍTICO</span>
+                  </div>
+                  <p className="def">
+                    Cuentas los catorce meses en orden cronológico, como si hubieran pasado. No como
+                    una decisión que tomaste y de la que volviste con un criterio nuevo.
+                  </p>
+                  <p className="ev">
+                    <em>Ejemplo.</em> Tu diagnóstico real aparece aquí después de Enviar.
+                  </p>
+                </div>
+                <div className="entry">
+                  <div className="hd">
+                    <span className="term">adjetivo sin evidencia</span>
+                    <span className="ipa">/aðxeˈtiβo sin eβiˈðenθja/</span>
+                    <span className="pos">sust.</span>
+                    <span className="sev">ALTO</span>
+                  </div>
+                  <p className="def">
+                    Describes cómo eres en vez de mostrar qué produjiste. <em>Hard worker, passionate</em>: palabras que cualquiera puede decir. La evidencia es lo único que no se puede copiar.
+                  </p>
+                  <p className="ev"><em>Ejemplo.</em></p>
+                </div>
+                <div className="entry">
+                  <div className="hd">
+                    <span className="term">resultado sin recencia</span>
+                    <span className="ipa">/resulˈtaðo sin reˈθensja/</span>
+                    <span className="pos">sust.</span>
+                    <span className="sev">MEDIO</span>
+                  </div>
+                  <p className="def">
+                    Listas tareas en vez de resultados medibles. La misma acción pesa distinto cuando la atas a un número.
+                  </p>
+                  <p className="ev"><em>Ejemplo.</em></p>
+                </div>
               </div>
-              <p className="def">
-                Describes cómo eres en vez de mostrar qué produjiste. <em>Hard worker, detail-oriented, passionate</em>: son palabras que cualquiera puede decir de sí mismo, y por eso no pesan. La evidencia es lo único que no se puede copiar.
-              </p>
-              <p className="ev">4 de 6 respuestas de tu última sesión abrieron con un adjetivo antes de llegar a un número.</p>
-            </div>
-
-            <div className="entry">
-              <div className="hd">
-                <span className="term">resultado sin recencia</span>
-                <span className="ipa">/resulˈtaðo sin reˈθensja/</span>
-                <span className="pos">sust.</span>
-                <span className="sev">MEDIO</span>
-              </div>
-              <p className="def">
-                Tus mejores métricas son de hace dos años y las cuentas en pasado lejano, lo que refuerza la distancia. La misma métrica se lee distinta cuando la conectas con el problema que ellos tienen hoy.
-              </p>
-              <p className="ev">Tienes el número que necesitan oír. Está en tu historia #2 y no la estás usando en esta entrevista.</p>
-            </div>
-          </div>
-
-          <div className="kicker-rule" />
-
-          <div className="two">
-            <div className="card">
-              <div className="eyebrow">Tu set para esta entrevista — 11 preguntas</div>
-              <p style={{ fontFamily: "'Playfair Display',serif", fontSize: 17, lineHeight: 1.55 }}>
-                Tell me about yourself.
-                <br />
-                Walk me through the last two years.
-                <br />
-                You've been out for a while — how do you get up to speed?
-                <br />
-                Tell me about a time you moved a retention metric.
-                <br />
-                <span style={{ color: "var(--muted)" }}>+ 7 más, incluida la de salario</span>
-              </p>
-            </div>
-            <div className="card flat" style={{ background: "var(--wash)" }}>
-              <div className="eyebrow">Por qué estas y no otras</div>
-              <p style={{ fontSize: 13.5, color: "#3d3d45" }}>
-                Seis salen del job description. Tres salen de tu arquetipo. Dos salen de lo que el panel de Lumen preguntó a otros candidatos, según sus perfiles públicos. Ninguna es genérica.
-              </p>
-            </div>
-          </div>
+            </>
+          )}
 
           <div className="row-actions">
             <button className="btn" onClick={() => go("s3")}>Entrar a la sala →</button>

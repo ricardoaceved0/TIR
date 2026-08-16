@@ -9,10 +9,16 @@
 import { PromptConfig, applyVariables } from "@/lib/prompt/config";
 import { Intake, intakeToText } from "@/lib/prompt/intake";
 import { callGemini } from "@/lib/ai/gemini";
+import {
+  Diagnostic,
+  DIAGNOSTIC_CONTRACT,
+  DIAGNOSTIC_SCHEMA,
+  parseDiagnostic,
+} from "@/lib/prompt/diagnostic";
 
 export type AnalysisResult = {
-  /** Raw text returned by the model — shown as-is in the .ai-box. */
-  text: string;
+  /** Structured diagnostic rendered on screen 02. */
+  diagnostic: Diagnostic;
   /** Model actually used. */
   model: string;
 };
@@ -36,7 +42,8 @@ export async function generateAnalysis(
   config: PromptConfig,
   intake: Intake
 ): Promise<AnalysisResult> {
-  const system = buildSystemInstruction(config, intake);
+  // System = the EDITABLE Studio instruction + the FIXED JSON contract.
+  const system = `${buildSystemInstruction(config, intake)}\n\n${DIAGNOSTIC_CONTRACT}`;
   const userContent = intakeToText(intake);
 
   // Provider dispatch. Only Gemini is wired for the POC; Claude is the
@@ -46,7 +53,9 @@ export async function generateAnalysis(
     temperature: config.temperature,
     system,
     userContent,
+    responseMimeType: "application/json",
+    responseSchema: DIAGNOSTIC_SCHEMA,
   });
 
-  return { text, model: config.model };
+  return { diagnostic: parseDiagnostic(text), model: config.model };
 }

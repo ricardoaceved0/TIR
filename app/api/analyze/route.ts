@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
   try {
     const result = await generateAnalysis(config, intake);
-    return NextResponse.json({ ok: true, text: result.text, model: result.model });
+    return NextResponse.json({ ok: true, diagnostic: result.diagnostic, model: result.model });
   } catch (e) {
     const message = e instanceof Error ? e.message : "Error desconocido al generar el análisis.";
     return NextResponse.json({ ok: false, error: message }, { status: 502 });
