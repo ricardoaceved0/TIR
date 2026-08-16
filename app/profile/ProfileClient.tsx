@@ -5,6 +5,7 @@ import "../member/member.css";
 import "./profile.css";
 import { SiteHeader, SiteFooter } from "@/app/components/SiteChrome";
 import { createClient } from "@/lib/supabase/client";
+import { Account, fetchAccount, initialsFrom } from "@/lib/auth/roles";
 
 /* ─────────────────────────── sections ─────────────────────────── */
 
@@ -87,7 +88,7 @@ type CvItem = { id: string; filename: string; markdown: string };
 
 export default function ProfileClient() {
   const [section, setSection] = useState<SectionId>("main");
-  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
+  const [account, setAccount] = useState<Account | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
 
   // hydrate section from the URL hash (gear icon links to #preferencias)
@@ -103,9 +104,8 @@ export default function ProfileClient() {
     let alive = true;
     (async () => {
       try {
-        const supabase = createClient();
-        const { data } = await supabase.auth.getUser();
-        if (alive && data?.user) setUser({ id: data.user.id, email: data.user.email ?? undefined });
+        const acc = await fetchAccount(createClient());
+        if (alive) setAccount(acc);
       } catch {
         /* no session / auth not configured */
       } finally {
@@ -149,11 +149,10 @@ export default function ProfileClient() {
           </h1>
         </div>
 
-        {authChecked && !user && (
+        {authChecked && !account && (
           <div className="pf-authbanner">
-            <b>Estás viendo tu perfil sin sesión.</b> El login aún no está conectado, así que los
-            cambios de cuenta, la foto y tu biblioteca de CVs se guardarán cuando exista. La
-            conversión de CV a Markdown y las preferencias ya funcionan.
+            <b>Estás viendo tu perfil sin sesión.</b> Inicia sesión para editar tu cuenta y guardar
+            tus CVs. La conversión de CV a Markdown y las preferencias ya funcionan.
           </div>
         )}
 
@@ -179,8 +178,8 @@ export default function ProfileClient() {
           </nav>
 
           <div className="pf-panel">
-            {section === "main" && <MainPanel user={user} />}
-            {section === "cvs" && <CvsPanel hasSession={!!user} />}
+            {section === "main" && <MainPanel account={account} />}
+            {section === "cvs" && <CvsPanel hasSession={!!account?.id} />}
             {section === "prefs" && <PrefsPanel />}
             {section === "sub" && <SubPanel />}
           </div>
@@ -194,9 +193,9 @@ export default function ProfileClient() {
 
 /* ─────────────────────────── Cuenta (Main) ─────────────────────────── */
 
-function MainPanel({ user }: { user: { id: string; email?: string } | null }) {
-  const [name, setName] = useState("Valentina Rossi");
-  const [email, setEmail] = useState(user?.email ?? "valentina@example.com");
+function MainPanel({ account }: { account: Account | null }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
@@ -204,9 +203,13 @@ function MainPanel({ user }: { user: { id: string; email?: string } | null }) {
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
+  // prefill from the real session
   useEffect(() => {
-    if (user?.email) setEmail(user.email);
-  }, [user?.email]);
+    setName(account?.fullName ?? "");
+    setEmail(account?.email ?? "");
+  }, [account?.fullName, account?.email]);
+
+  const initials = initialsFrom(name || account?.fullName, account?.email) || "··";
 
   const pickAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -219,8 +222,8 @@ function MainPanel({ user }: { user: { id: string; email?: string } | null }) {
       setMsg({ kind: "err", text: "Las contraseñas no coinciden." });
       return;
     }
-    if (!user) {
-      setMsg({ kind: "err", text: "Necesitas iniciar sesión para guardar (auth aún no conectada)." });
+    if (!account?.id) {
+      setMsg({ kind: "err", text: "Necesitas iniciar sesión para guardar." });
       return;
     }
     setState("saving");
@@ -229,13 +232,13 @@ function MainPanel({ user }: { user: { id: string; email?: string } | null }) {
       const payload: { email?: string; password?: string; data: { full_name: string } } = {
         data: { full_name: name },
       };
-      if (email && email !== user.email) payload.email = email;
+      if (email && email !== account.email) payload.email = email;
       if (pw) payload.password = pw;
       const { error: authErr } = await supabase.auth.updateUser(payload);
       if (authErr) throw authErr;
-      // mirror the display fields into a profiles row (owner-scoped by RLS)
-      await supabase.from("profiles").upsert({ id: user.id, full_name: name });
-      setMsg({ kind: "ok", text: "Cambios guardados." });
+      // mirror the display name into the profiles row the header reads (owner RLS)
+      await supabase.from("profiles").upsert({ id: account.id, full_name: name });
+      setMsg({ kind: "ok", text: "Cambios guardados. Se reflejarán en toda la app." });
       setPw("");
       setPw2("");
     } catch (e) {
@@ -251,7 +254,7 @@ function MainPanel({ user }: { user: { id: string; email?: string } | null }) {
 
       <div className="pf-avatar-row">
         <div className="pf-avatar" aria-hidden="true">
-          {avatar ? <img src={avatar} alt="" /> : <span>VR</span>}
+          {avatar ? <img src={avatar} alt="" /> : <span>{initials}</span>}
         </div>
         <div>
           <button className="btn ghost sm" type="button" onClick={() => fileRef.current?.click()}>
@@ -265,11 +268,11 @@ function MainPanel({ user }: { user: { id: string; email?: string } | null }) {
       <div className="pf-fields">
         <div>
           <label className="fld" htmlFor="pf-name">Nombre completo</label>
-          <input className="txt" id="pf-name" value={name} onChange={(e) => setName(e.target.value)} />
+          <input className="txt" id="pf-name" value={name} placeholder="Tu nombre" onChange={(e) => setName(e.target.value)} />
         </div>
         <div>
           <label className="fld" htmlFor="pf-email">Correo</label>
-          <input className="txt" id="pf-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input className="txt" id="pf-email" type="email" value={email} placeholder="tu@correo.com" onChange={(e) => setEmail(e.target.value)} />
           <p className="pf-help">Cambiar el correo envía un enlace de confirmación a la nueva dirección.</p>
         </div>
         <div className="pf-two">

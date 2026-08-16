@@ -4,21 +4,17 @@
    and use the design tokens so Studio matches the member area.
    ============================================================ */
 
-.tir .st-shell {
-  padding-top: 40px;
-}
-
-/* ---------- hero ---------- */
-.tir .st-hero {
+/* ---------- topbar (panel head + save status) ---------- */
+.tir .st-topbar {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 24px;
+  gap: 20px;
   flex-wrap: wrap;
+  margin-bottom: 20px;
 }
-.tir .st-hero .display {
-  margin-top: 4px;
-}
+.tir .st-topbar .pf-panelhead { margin-bottom: 0; }
+.tir .st-section:first-of-type { margin-top: 0; }
 
 /* status pill */
 .tir .st-status {

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { fetchRole, isAdminRole, Role } from "@/lib/auth/roles";
+import { fetchAccount, initialsFrom, isAdminRole, Role } from "@/lib/auth/roles";
 
 /**
  * Shared site chrome for The Interview Room — the header bar and footer that
@@ -68,14 +68,21 @@ export function SiteHeader({
   onBrand?: () => void;
   avatar?: string;
 }) {
-  // The ghost (admin backend) shows only for admins and super_admins.
+  // Identity comes from the real session: the ghost (admin backend) shows only
+  // for admins/super_admins, and the avatar initials + name reflect the signed-in
+  // user across every screen. Falls back to the `avatar` prop when logged out.
   const [role, setRole] = useState<Role | null>(null);
+  const [initials, setInitials] = useState<string>("");
+  const [name, setName] = useState<string | null>(null);
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        const r = await fetchRole(createClient());
-        if (alive) setRole(r);
+        const acc = await fetchAccount(createClient());
+        if (!alive || !acc) return;
+        setRole(acc.role);
+        setInitials(initialsFrom(acc.fullName, acc.email));
+        setName(acc.fullName);
       } catch {
         /* not signed in / auth not configured */
       }
@@ -84,6 +91,8 @@ export function SiteHeader({
       alive = false;
     };
   }, []);
+
+  const shownAvatar = initials || avatar;
 
   const brandInner = (
     <>
@@ -124,9 +133,9 @@ export function SiteHeader({
             <BellIcon />
             <span className="bell-dot" aria-hidden="true" />
           </button>
-          {avatar && (
-            <a className="hdr-btn avatar" href="/profile" aria-label="Tu perfil" title="Tu perfil">
-              {avatar}
+          {shownAvatar && (
+            <a className="hdr-btn avatar" href="/profile" aria-label="Tu perfil" title={name ?? "Tu perfil"}>
+              {shownAvatar}
             </a>
           )}
         </div>

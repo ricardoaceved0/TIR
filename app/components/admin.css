@@ -5,6 +5,9 @@
 
 .tir .pf-nav a.pf-navitem { text-decoration: none; }
 
+/* bare content column (no panel card) — e.g. /studio provides its own cards */
+.tir .adm-bare { min-width: 0; }
+
 /* checking / denied states */
 .tir .adm-checking {
   margin-top: 22px;
