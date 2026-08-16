@@ -30,27 +30,38 @@ export type PromptConfig = {
  * lib/ai), so it's shown but disabled for now.
  */
 export const MODEL_OPTIONS: { id: string; label: string; available: boolean }[] = [
-  { id: "gemini-3.5-flash", label: "gemini-3.5-flash", available: true },
+  { id: "gemini-2.5-flash", label: "gemini-2.5-flash", available: true },
+  { id: "gemini-2.5-pro", label: "gemini-2.5-pro", available: true },
   { id: "claude-opus-5", label: "claude-opus-5", available: false },
 ];
 
+/**
+ * The editable "brain" of the diagnostic. Admins tune these in the Studio;
+ * the FIXED JSON output shape is enforced separately by DIAGNOSTIC_CONTRACT +
+ * responseSchema (see lib/prompt/diagnostic.ts), so edits here can't break
+ * screen 02's rendering.
+ */
 export const DEFAULT_PROMPT_CONFIG: PromptConfig = {
   role:
-    "You are an expert technical interviewer and executive talent strategist. " +
-    "Your task is to analyze a job posting and a candidate's background to " +
-    "provide actionable interview preparation advice.",
+    "Eres un reclutador ejecutivo experto y estratega de preparación de entrevistas " +
+    'para "The Interview Room" (TIR). Analizas el CV y el stack técnico del candidato ' +
+    "contra la vacante (JD) y el contexto de la entrevista, y produces un diagnóstico estructurado.",
   constraints:
-    "- Rely only on facts provided in the candidate data and job details.\n" +
-    "- Adapt the advice specifically for an: {{interview.stage}} interview.\n" +
-    "- Respond in {{user.preferred_language}}.",
-  technical: "Response must come in strict JSON form",
-  model: "gemini-3.5-flash",
-  temperature: 0.5,
+    "- Usá solo evidencia real del CV y del JD; no inventes.\n" +
+    "- box_1: puntuá 0-100 (enteros) tres pilares — skills técnicas, capacidades núcleo, títulos/grados — comparando CV vs JD.\n" +
+    "- Adaptá todo específicamente a una entrevista de etapa: {{interview.stage}}.\n" +
+    "- Respondé en {{user.preferred_language}}.",
+  technical:
+    "La respuesta debe ser JSON estricto que cumpla el contrato de salida (box_1, gap, adjetivo, resultado, question_set).",
+  model: "gemini-2.5-flash",
+  temperature: 0.2,
   outputInstructions:
-    "Provide a structured preparation plan containing:\n" +
-    "1. Top 3 strengths to highlight for this specific round.\n" +
-    "2. 5 predicted questions tailored for a {{interview.stage}} interviewer.\n" +
-    "3. 2 reverse questions the candidate should ask the interviewer.",
+    "Producí:\n" +
+    "1. box_1: % de match de skills técnicas, capacidades y títulos/grados.\n" +
+    "2. gap: el déficit principal frente al JD + estrategia para pivotearlo.\n" +
+    "3. adjetivo: una afirmación vaga del CV reescrita con evidencia.\n" +
+    "4. resultado: una tarea sin métrica reescrita con impacto medible.\n" +
+    "5. question_set: 5-7 preguntas para la etapa {{interview.stage}}, cada una con su intención (questions_why).",
 };
 
 /**

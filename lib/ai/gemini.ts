@@ -13,9 +13,23 @@ export type GeminiCall = {
   temperature: number;
   system: string;
   userContent: string;
+  /** Force a MIME type (e.g. "application/json") for structured output. */
+  responseMimeType?: string;
+  /** OpenAPI-subset schema constraining the response (structured output). */
+  responseSchema?: unknown;
+  /** Cap on output tokens (default 2048). */
+  maxOutputTokens?: number;
 };
 
-export async function callGemini({ model, temperature, system, userContent }: GeminiCall): Promise<string> {
+export async function callGemini({
+  model,
+  temperature,
+  system,
+  userContent,
+  responseMimeType,
+  responseSchema,
+  maxOutputTokens = 2048,
+}: GeminiCall): Promise<string> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) {
     throw new Error("GEMINI_API_KEY no está configurada en el servidor.");
@@ -27,7 +41,9 @@ export async function callGemini({ model, temperature, system, userContent }: Ge
     contents: [{ role: "user", parts: [{ text: userContent }] }],
     generationConfig: {
       temperature,
-      maxOutputTokens: 2048,
+      maxOutputTokens,
+      ...(responseMimeType ? { responseMimeType } : {}),
+      ...(responseSchema ? { responseSchema } : {}),
     },
   });
 
