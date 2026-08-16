@@ -1,0 +1,147 @@
+/* ============================================================
+   Admin backend — layers on member.css + profile.css (reuses the
+   .pf-* left-sidebar layout). Scoped under `.tir`.
+   ============================================================ */
+
+.tir .pf-nav a.pf-navitem { text-decoration: none; }
+
+/* checking / denied states */
+.tir .adm-checking {
+  margin-top: 22px;
+  padding: 40px;
+  text-align: center;
+  color: var(--muted);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+}
+.tir .adm-denied {
+  margin-top: 22px;
+  background: var(--paper);
+  border: 1.5px solid var(--hair);
+  border-radius: var(--r);
+  padding: 40px 28px;
+  text-align: center;
+  max-width: 520px;
+}
+.tir .adm-denied-mark {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--paper);
+}
+.tir .adm-denied .sect { font-size: 22px; }
+.tir .adm-denied .pf-panelhint { margin: 8px auto 20px; }
+
+/* ---------- Usuarios ---------- */
+.tir .adm-userform {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.tir .adm-userform .adm-full { grid-column: 1 / -1; }
+.tir select.txt {
+  width: 100%;
+  font-family: "Poppins", sans-serif;
+  font-size: 14.5px;
+  color: var(--ink);
+  background: var(--wash);
+  border: 1px solid #c6c6d2;
+  border-radius: 6px;
+  padding: 13px 15px;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none' stroke='%2371717a' stroke-width='1.6'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+.tir select.txt:focus { outline: 2px solid var(--ink); outline-offset: -1px; background-color: var(--paper); }
+.tir .adm-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 18px;
+}
+.tir .adm-msg { font-family: "IBM Plex Mono", monospace; font-size: 12px; }
+.tir .adm-msg.ok { color: var(--ok); }
+.tir .adm-msg.err { color: #c0492f; }
+
+.tir .adm-userlist { margin-top: 8px; }
+.tir .adm-userlist-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.tir .adm-userrow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 13px 0;
+  border-top: 1px solid var(--wash-deep);
+}
+.tir .adm-userrow:first-of-type { border-top: 0; }
+.tir .adm-user-email { font-size: 13.5px; font-weight: 600; }
+.tir .adm-user-name { font-size: 12px; color: var(--muted); margin-top: 1px; }
+.tir .adm-rolebadge {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.tir .adm-rolebadge.regular { color: var(--ink); background: var(--wash-deep); }
+.tir .adm-rolebadge.admin { color: #26262c; background: var(--mark-soft); border: 1px solid var(--mark); }
+.tir .adm-rolebadge.super_admin { color: var(--ink); background: var(--mark); }
+.tir .adm-empty { font-size: 13px; color: var(--muted); padding: 8px 0; }
+
+/* ---------- Lenguaje (coming soon) ---------- */
+.tir .adm-soon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 220px;
+  gap: 10px;
+}
+.tir .adm-soon-badge {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: var(--mark);
+  padding: 6px 14px;
+  border-radius: 999px;
+}
+.tir .adm-soon h2 { font-family: "Playfair Display", serif; font-size: 30px; font-weight: 500; }
+.tir .adm-soon p { color: var(--muted); font-size: 14px; max-width: 44ch; }
+
+/* ---------- login ---------- */
+.tir .login-wrap {
+  max-width: 420px;
+  margin: 40px auto 0;
+}
+.tir .login-card {
+  background: var(--paper);
+  border: 1.5px solid var(--hair);
+  border-radius: var(--r);
+  padding: 30px 28px;
+}
+.tir .login-card .fld { margin-top: 16px; }
+.tir .login-card .fld:first-of-type { margin-top: 0; }
+.tir .login-actions { margin-top: 22px; display: flex; justify-content: flex-end; }
+.tir .login-actions .btn { width: 100%; justify-content: center; }
+
+@media (max-width: 620px) {
+  .tir .adm-userform { grid-template-columns: 1fr; }
+}

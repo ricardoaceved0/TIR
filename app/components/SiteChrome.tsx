@@ -1,5 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { fetchRole, isAdminRole, Role } from "@/lib/auth/roles";
+
 /**
  * Shared site chrome for The Interview Room — the header bar and footer that
  * every screen (member area, Prompt Studio, …) renders so the design system
@@ -64,6 +68,23 @@ export function SiteHeader({
   onBrand?: () => void;
   avatar?: string;
 }) {
+  // The ghost (admin backend) shows only for admins and super_admins.
+  const [role, setRole] = useState<Role | null>(null);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const r = await fetchRole(createClient());
+        if (alive) setRole(r);
+      } catch {
+        /* not signed in / auth not configured */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const brandInner = (
     <>
       <Seal />
@@ -91,9 +112,11 @@ export function SiteHeader({
         )}
 
         <div className="hdr-actions">
-          <a className="hdr-btn" href="/studio" aria-label="Backend · Prompt Studio" title="Backend · Prompt Studio">
-            <GhostIcon />
-          </a>
+          {isAdminRole(role) && (
+            <a className="hdr-btn" href="/admin-backend" aria-label="Backend de administración" title="Backend de administración">
+              <GhostIcon />
+            </a>
+          )}
           <a className="hdr-btn" href="/profile#preferencias" aria-label="Preferencias" title="Preferencias">
             <GearIcon />
           </a>
@@ -101,9 +124,11 @@ export function SiteHeader({
             <BellIcon />
             <span className="bell-dot" aria-hidden="true" />
           </button>
-          <a className="hdr-btn avatar" href="/profile" aria-label="Tu perfil" title="Tu perfil">
-            {avatar}
-          </a>
+          {avatar && (
+            <a className="hdr-btn avatar" href="/profile" aria-label="Tu perfil" title="Tu perfil">
+              {avatar}
+            </a>
+          )}
         </div>
       </div>
     </header>

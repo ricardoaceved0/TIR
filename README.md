@@ -28,8 +28,16 @@ Other routes:
 | Route | What it does |
 |-------|--------------|
 | `/profile` | Member account area (left-sidebar layout): **Cuenta** (name, avatar, email, password), **Mis CVs** (upload → Markdown), **Preferencias** (text size, language, motion), **Subscripción** (plan, credits, billing). Header profile → `/profile`, gear → `/profile#preferencias`. See **`docs/PROFILE_SETUP.md`**. |
-| `/studio` | Backend **Prompt Studio** — edits the prompt config the AI mixes with each intake. Header ghost icon → `/studio`. |
+| `/login` | Email/password sign-in (`supabase.auth.signInWithPassword`). |
+| `/admin-backend` | Admin backend (same left-sidebar layout), menu: **AI Studio** (`/studio`), **Usuarios** (`/admin-users`), **Lenguaje** (`/admin-lenguaje`). Gated to admin/super_admin. |
+| `/admin-users` | Create users (login, password, access level) via `POST /api/admin/users` (service-role, server-guarded). |
+| `/studio` | Backend **Prompt Studio** — edits the prompt config the AI mixes with each intake. |
 | `/status` | Live green/red check of the Supabase connection. |
+
+**Roles** (`regular` · `admin` · `super_admin`) live on `profiles.role`. The
+header **ghost icon** shows only for admins/super_admins and links to
+`/admin-backend`. See **`docs/USERS_SETUP.md`** (migrations, service-role key,
+and seeding the super admin — the password is passed via env, never committed).
 
 `POST /api/cv/convert` converts an uploaded **PDF or DOCX** CV to Markdown
 server-side (mammoth + unpdf) — fully functional, no auth required.
