@@ -203,6 +203,13 @@
   color: var(--ink);
   border-color: transparent;
 }
+.tir .hdr-avatar-img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
 
 @media (max-width: 560px) {
   .tir .byline { display: none; }

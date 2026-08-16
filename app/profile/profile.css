@@ -136,6 +136,8 @@
   gap: 14px;
   margin-top: 24px;
 }
+.tir .pf-actions-split { justify-content: space-between; }
+.tir .pf-actions-right { display: flex; align-items: center; gap: 14px; }
 .tir .pf-msg { font-family: "IBM Plex Mono", monospace; font-size: 12px; }
 .tir .pf-msg.ok { color: var(--ok); }
 .tir .pf-msg.err { color: #c0492f; }
@@ -368,4 +370,7 @@
   .tir .pf-two { grid-template-columns: 1fr; }
   .tir .pf-bill-row { grid-template-columns: 1fr auto; }
   .tir .pf-bill-detail { grid-column: 1 / -1; order: 3; color: var(--muted); font-size: 12px; }
+  .tir .pf-actions-split { flex-direction: column-reverse; align-items: stretch; gap: 12px; }
+  .tir .pf-actions-right { flex-direction: column-reverse; align-items: stretch; }
+  .tir .pf-actions-split .btn { width: 100%; justify-content: center; }
 }
