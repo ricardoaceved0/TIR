@@ -161,6 +161,42 @@
 .tir .st-savemsg.ok { color: var(--ok); }
 .tir .st-savemsg.err { color: #c0492f; }
 
+/* profile slots (1–4) */
+.tir .st-profiles {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.tir .st-profiles-lbl {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-right: 2px;
+}
+.tir .st-profile {
+  appearance: none;
+  cursor: pointer;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1.5px solid var(--hair);
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 13px;
+  font-weight: 600;
+  transition: 0.14s;
+}
+.tir .st-profile:hover:not(:disabled) { background: var(--wash); }
+.tir .st-profile.on {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.tir .st-profile:disabled { opacity: 0.55; cursor: default; }
+
 @media (max-width: 680px) {
   .tir .st-section { grid-template-columns: 1fr; gap: 14px; }
 }
@@ -170,4 +206,5 @@
   .tir .st-actions { flex-direction: column; align-items: stretch; }
   .tir .st-actions .btn { width: 100%; justify-content: center; }
   .tir .st-actions-right { flex-direction: column; align-items: stretch; margin-left: 0; }
+  .tir .st-profiles { justify-content: center; flex-wrap: wrap; }
 }
