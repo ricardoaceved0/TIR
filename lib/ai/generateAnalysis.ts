@@ -46,16 +46,26 @@ export async function generateAnalysis(
   const system = `${buildSystemInstruction(config, intake)}\n\n${DIAGNOSTIC_CONTRACT}`;
   const userContent = intakeToText(intake);
 
+  // Guard against a stale/invalid saved model (e.g. the retired
+  // "gemini-3.5-flash") — fall back to a real Gemini model.
+  const model =
+    config.model.startsWith("gemini-") && config.model !== "gemini-3.5-flash"
+      ? config.model
+      : "gemini-2.5-flash";
+
   // Provider dispatch. Only Gemini is wired for the POC; Claude is the
   // planned production swap (see lib/prompt/config MODEL_OPTIONS).
   const text = await callGemini({
-    model: config.model,
+    model,
     temperature: config.temperature,
     system,
     userContent,
     responseMimeType: "application/json",
     responseSchema: DIAGNOSTIC_SCHEMA,
+    maxOutputTokens: 8192,
+    // Disable "thinking" on 2.5-flash so the whole budget goes to the JSON.
+    ...(model.startsWith("gemini-2.5-flash") ? { thinkingBudget: 0 } : {}),
   });
 
-  return { diagnostic: parseDiagnostic(text), model: config.model };
+  return { diagnostic: parseDiagnostic(text), model };
 }

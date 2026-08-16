@@ -17,8 +17,11 @@ export type GeminiCall = {
   responseMimeType?: string;
   /** OpenAPI-subset schema constraining the response (structured output). */
   responseSchema?: unknown;
-  /** Cap on output tokens (default 2048). */
+  /** Cap on output tokens (default 8192). */
   maxOutputTokens?: number;
+  /** Gemini 2.5 thinking budget. 0 disables "thinking" (flash only) so the
+   *  whole token budget goes to the answer — important for JSON extraction. */
+  thinkingBudget?: number;
 };
 
 export async function callGemini({
@@ -28,7 +31,8 @@ export async function callGemini({
   userContent,
   responseMimeType,
   responseSchema,
-  maxOutputTokens = 2048,
+  maxOutputTokens = 8192,
+  thinkingBudget,
 }: GeminiCall): Promise<string> {
   const key = process.env.GEMINI_API_KEY;
   if (!key) {
@@ -44,6 +48,7 @@ export async function callGemini({
       maxOutputTokens,
       ...(responseMimeType ? { responseMimeType } : {}),
       ...(responseSchema ? { responseSchema } : {}),
+      ...(thinkingBudget !== undefined ? { thinkingConfig: { thinkingBudget } } : {}),
     },
   });
 
@@ -68,7 +73,10 @@ export async function callGemini({
   }
 
   const data = (await res.json()) as {
-    candidates?: { content?: { parts?: { text?: string }[] } }[];
+    candidates?: {
+      content?: { parts?: { text?: string; thought?: boolean }[] };
+      finishReason?: string;
+    }[];
     promptFeedback?: { blockReason?: string };
   };
 
@@ -76,8 +84,18 @@ export async function callGemini({
     throw new Error(`Gemini bloqueó la solicitud: ${data.promptFeedback.blockReason}`);
   }
 
-  const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
+  const candidate = data.candidates?.[0];
+  // Exclude "thought" parts (2.5 thinking) — we only want the answer text.
+  const text =
+    candidate?.content?.parts
+      ?.filter((p) => !p.thought)
+      .map((p) => p.text ?? "")
+      .join("") ?? "";
+
   if (!text.trim()) {
+    if (candidate?.finishReason === "MAX_TOKENS") {
+      throw new Error("La respuesta se truncó por límite de tokens. Intenta de nuevo.");
+    }
     throw new Error("Gemini devolvió una respuesta vacía.");
   }
   return text;

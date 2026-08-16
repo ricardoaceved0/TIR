@@ -489,6 +489,16 @@ export default function MemberArea() {
                         </div>
                       </div>
                     ))
+                  : aiState === "done" && !diagnostic
+                  ? DEFAULT_NEEDS.map((n) => (
+                      <div className="need" key={n.key}>
+                        <ProgressRing pct={0} />
+                        <div className="need-body">
+                          <span className="need-label">{n.label}</span>
+                          <span className="need-match mid">—</span>
+                        </div>
+                      </div>
+                    ))
                   : dxNeeds.map((n) => (
                       <div className="need" key={n.key}>
                         <ProgressRing pct={n.match} />
