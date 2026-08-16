@@ -114,7 +114,18 @@ export function parseDiagnostic(raw: string): Diagnostic {
   try {
     obj = JSON.parse(text) as Record<string, unknown>;
   } catch {
-    throw new Error("La respuesta del modelo no es JSON válido.");
+    // Fallback: grab the outermost {...} in case the model added prose.
+    const first = text.indexOf("{");
+    const last = text.lastIndexOf("}");
+    if (first !== -1 && last > first) {
+      try {
+        obj = JSON.parse(text.slice(first, last + 1)) as Record<string, unknown>;
+      } catch {
+        throw new Error("La respuesta del modelo no es JSON válido.");
+      }
+    } else {
+      throw new Error("La respuesta del modelo no es JSON válido.");
+    }
   }
 
   const g = (o: unknown, k: string): unknown => (o as Record<string, unknown>)?.[k];

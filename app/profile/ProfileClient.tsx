@@ -393,18 +393,34 @@ function CvsPanel({ account }: { account: Account | null }) {
         return;
       }
       setBusy(true);
+      // 1) Convert (this is the part that can genuinely fail).
+      let filename = file.name;
+      let markdown = "";
       try {
         const fd = new FormData();
         fd.append("file", file);
         const res = await fetch("/api/cv/convert", { method: "POST", body: fd });
         const data = await res.json().catch(() => null);
         if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
-        const filename = (data.filename || file.name) as string;
-        const markdown = data.markdown as string;
+        filename = (data.filename || file.name) as string;
+        markdown = data.markdown as string;
+      } catch (e) {
+        setErr(`No se pudo convertir. ${e instanceof Error ? e.message : ""}`.trim());
+        setBusy(false);
+        return;
+      }
 
-        // Persist to Supabase; the first CV becomes the active one.
-        if (account?.id) {
-          const makeActive = items.length === 0;
+      // Show the converted CV immediately (in-memory).
+      const makeActive = items.length === 0;
+      const localId = `local-${Date.now()}`;
+      setItems((xs) => [{ id: localId, filename, markdown, isActive: makeActive }, ...xs]);
+      setOpenId(localId);
+      setBusy(false);
+
+      // 2) Persist to Supabase (best-effort — a missing table/migration must
+      //    NOT read as a conversion failure).
+      if (account?.id) {
+        try {
           const supabase = createClient();
           const { data: row, error } = await supabase
             .from("cvs")
@@ -412,23 +428,10 @@ function CvsPanel({ account }: { account: Account | null }) {
             .select("id")
             .single();
           if (error) throw error;
-          const item: CvItem = { id: String(row.id), filename, markdown, isActive: makeActive };
-          setItems((xs) => [item, ...xs]);
-          setOpenId(item.id);
-        } else {
-          const item: CvItem = {
-            id: `local-${Date.now()}`,
-            filename,
-            markdown,
-            isActive: items.length === 0,
-          };
-          setItems((xs) => [item, ...xs]);
-          setOpenId(item.id);
+          setItems((xs) => xs.map((x) => (x.id === localId ? { ...x, id: String(row.id) } : x)));
+        } catch {
+          setErr("Se convirtió, pero no se pudo guardar en tu biblioteca (falta correr la migración de CVs).");
         }
-      } catch (e) {
-        setErr(e instanceof Error ? e.message : "No se pudo convertir.");
-      } finally {
-        setBusy(false);
       }
     },
     [account?.id, items.length]
