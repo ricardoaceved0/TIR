@@ -88,16 +88,34 @@ export default function StudioClient() {
           title="AI Studio"
           hint="Define las “instrucciones especiales” que la sala mezcla con la Entrada del candidato antes de llamar al modelo."
         />
-        <div className={`st-status ${persisted ? "ok" : "warn"}`}>
-          <span className="st-dot" aria-hidden="true" />
-          <span className="st-status-txt">
-            {loading
-              ? "Cargando…"
-              : persisted
-              ? "Guardado en Supabase"
-              : "Sin persistir · valores por defecto"}
-          </span>
-          {note && <span className="st-note">{note}</span>}
+        <div className="st-topbar-right">
+          <div className={`st-status ${persisted ? "ok" : "warn"}`}>
+            <span className="st-dot" aria-hidden="true" />
+            <span className="st-status-txt">
+              {loading
+                ? "Cargando…"
+                : persisted
+                ? "Guardado en Supabase"
+                : "Sin persistir · valores por defecto"}
+            </span>
+            {note && <span className="st-note">{note}</span>}
+          </div>
+          <div className="st-profile-select">
+            <label htmlFor="st-profile">Perfil</label>
+            <select
+              id="st-profile"
+              className="txt"
+              value={profile}
+              disabled={loading}
+              onChange={(e) => loadProfile(Number(e.target.value))}
+            >
+              {[1, 2, 3, 4].map((n) => (
+                <option key={n} value={n}>
+                  Perfil {n}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -202,22 +220,6 @@ export default function StudioClient() {
             Limpiar todos los campos
           </button>
           <div className="st-actions-right">
-            <div className="st-profiles" role="group" aria-label="Perfiles de instrucciones">
-              <span className="st-profiles-lbl">Perfiles</span>
-              {[1, 2, 3, 4].map((n) => (
-                <button
-                  key={n}
-                  type="button"
-                  className={`st-profile${profile === n ? " on" : ""}`}
-                  aria-pressed={profile === n}
-                  title={`Cargar perfil ${n}`}
-                  onClick={() => loadProfile(n)}
-                  disabled={loading}
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
             {saveMsg && (
               <span className={`st-savemsg ${saveState === "error" ? "err" : "ok"}`}>{saveMsg}</span>
             )}
