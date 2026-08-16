@@ -34,7 +34,13 @@ export async function fetchRole(supabase: SupabaseClient): Promise<Role | null> 
   return acc ? acc.role : null;
 }
 
-export type Account = { id: string | null; email: string | null; fullName: string | null; role: Role };
+export type Account = {
+  id: string | null;
+  email: string | null;
+  fullName: string | null;
+  avatarUrl: string | null;
+  role: Role;
+};
 
 /**
  * Resolve the signed-in user's identity (email, display name, role) from a
@@ -48,6 +54,7 @@ export async function fetchAccount(supabase: SupabaseClient): Promise<Account | 
       id: null,
       email: "dev@local",
       fullName: process.env.NEXT_PUBLIC_DEV_NAME ?? null,
+      avatarUrl: null,
       role: process.env.NEXT_PUBLIC_DEV_ROLE,
     };
   }
@@ -57,15 +64,18 @@ export async function fetchAccount(supabase: SupabaseClient): Promise<Account | 
   if (!user) return null;
   const { data } = await supabase
     .from("profiles")
-    .select("role, full_name")
+    .select("role, full_name, avatar_url")
     .eq("id", user.id)
     .single();
   const metaName =
     typeof user.user_metadata?.full_name === "string" ? user.user_metadata.full_name : null;
+  const metaAvatar =
+    typeof user.user_metadata?.avatar_url === "string" ? user.user_metadata.avatar_url : null;
   return {
     id: user.id,
     email: user.email ?? null,
     fullName: typeof data?.full_name === "string" && data.full_name ? data.full_name : metaName,
+    avatarUrl: typeof data?.avatar_url === "string" && data.avatar_url ? data.avatar_url : metaAvatar,
     role: isRole(data?.role) ? data.role : "regular",
   };
 }

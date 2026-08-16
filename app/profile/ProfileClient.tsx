@@ -199,6 +199,7 @@ function MainPanel({ account }: { account: Account | null }) {
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
+  const [avatarBusy, setAvatarBusy] = useState(false);
   const [state, setState] = useState<"idle" | "saving">("idle");
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -207,13 +208,53 @@ function MainPanel({ account }: { account: Account | null }) {
   useEffect(() => {
     setName(account?.fullName ?? "");
     setEmail(account?.email ?? "");
-  }, [account?.fullName, account?.email]);
+    setAvatar(account?.avatarUrl ?? null);
+  }, [account?.fullName, account?.email, account?.avatarUrl]);
 
   const initials = initialsFrom(name || account?.fullName, account?.email) || "··";
 
-  const pickAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const pickAvatar = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
-    if (f) setAvatar(URL.createObjectURL(f));
+    e.target.value = "";
+    if (!f) return;
+    if (!account?.id) {
+      setMsg({ kind: "err", text: "Inicia sesión para cambiar tu foto." });
+      return;
+    }
+    setMsg(null);
+    setAvatarBusy(true);
+    // optimistic local preview while it uploads
+    const localPreview = URL.createObjectURL(f);
+    setAvatar(localPreview);
+    try {
+      const supabase = createClient();
+      const ext = (f.name.split(".").pop() || "png").toLowerCase();
+      const path = `${account.id}/avatar.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, f, { upsert: true, contentType: f.type });
+      if (upErr) throw upErr;
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("avatars").getPublicUrl(path);
+      setAvatar(`${publicUrl}?t=${Date.now()}`); // cache-bust the fixed path
+      await supabase.from("profiles").upsert({ id: account.id, avatar_url: publicUrl });
+      await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
+      setMsg({ kind: "ok", text: "Foto actualizada." });
+    } catch (e2) {
+      setAvatar(account?.avatarUrl ?? null);
+      setMsg({ kind: "err", text: e2 instanceof Error ? e2.message : "No se pudo subir la foto." });
+    } finally {
+      setAvatarBusy(false);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await createClient().auth.signOut();
+    } finally {
+      window.location.href = "/login";
+    }
   };
 
   const save = async () => {
@@ -257,8 +298,8 @@ function MainPanel({ account }: { account: Account | null }) {
           {avatar ? <img src={avatar} alt="" /> : <span>{initials}</span>}
         </div>
         <div>
-          <button className="btn ghost sm" type="button" onClick={() => fileRef.current?.click()}>
-            Cambiar foto
+          <button className="btn ghost sm" type="button" onClick={() => fileRef.current?.click()} disabled={avatarBusy}>
+            {avatarBusy ? "Subiendo…" : "Cambiar foto"}
           </button>
           <p className="pf-help">JPG o PNG, hasta 4 MB.</p>
           <input ref={fileRef} type="file" accept="image/png,image/jpeg" hidden onChange={pickAvatar} />
@@ -287,11 +328,14 @@ function MainPanel({ account }: { account: Account | null }) {
         </div>
       </div>
 
-      <div className="pf-actions">
-        {msg && <span className={`pf-msg ${msg.kind}`}>{msg.text}</span>}
-        <button className="btn" type="button" onClick={save} disabled={state === "saving"}>
-          {state === "saving" ? "Guardando…" : "Guardar cambios"}
-        </button>
+      <div className="pf-actions pf-actions-split">
+        <button className="btn ghost" type="button" onClick={logout}>Cerrar sesión</button>
+        <div className="pf-actions-right">
+          {msg && <span className={`pf-msg ${msg.kind}`}>{msg.text}</span>}
+          <button className="btn" type="button" onClick={save} disabled={state === "saving"}>
+            {state === "saving" ? "Guardando…" : "Guardar cambios"}
+          </button>
+        </div>
       </div>
     </>
   );

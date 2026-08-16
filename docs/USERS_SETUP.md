@@ -33,9 +33,28 @@ Run in the Supabase SQL editor (or `supabase db push`), in order:
 
 ## 2 · Enable email auth
 
-Supabase dashboard → **Authentication → Providers → Email**: enable it.
-(Password sign-in; no public sign-up flow is exposed in the app — admins mint
-users.)
+Supabase dashboard → **Authentication → Providers → Email**: enable it. Keep
+**sign-ups enabled** if you want the public `/register` screen to work; if you
+require email confirmation, new users get a "revisa tu correo" step before they
+can log in.
+
+### Auth gating & flows (in the app)
+
+- **Every route is gated.** `middleware.ts` redirects any un-authenticated
+  request to `/login?next=…`. Public pages: `/login`, `/register`,
+  `/forgot-password`, `/reset-password` (and `/api/*`, which self-authorize).
+- **/login** has **¿Olvidaste tu contraseña?** → `/forgot-password`
+  (`resetPasswordForEmail`, redirects to `/reset-password`) and **Crear
+  cuenta** → `/register` (`signUp`).
+- **Logout** lives in `/profile → Cuenta` ("Cerrar sesión").
+- Auth screens use a minimal header (no gear/bell/avatar).
+
+### Avatar photos
+
+`/profile → Cuenta → Cambiar foto` uploads to the **`avatars`** bucket at
+`${uid}/avatar.<ext>` and stores the public URL on `profiles.avatar_url` +
+auth metadata. The header shows the photo everywhere once set. The bucket +
+per-user policies come from `0001_profile.sql`.
 
 ## 3 · Server env
 

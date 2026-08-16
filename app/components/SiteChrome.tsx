@@ -63,17 +63,21 @@ function BellIcon() {
 export function SiteHeader({
   onBrand,
   avatar = "VR",
+  actions = true,
 }: {
   /** In-page brand handler (member area). When omitted, the brand links to "/". */
   onBrand?: () => void;
   avatar?: string;
+  /** Hide the action controls (gear/bell/ghost/avatar) — used on auth screens. */
+  actions?: boolean;
 }) {
   // Identity comes from the real session: the ghost (admin backend) shows only
-  // for admins/super_admins, and the avatar initials + name reflect the signed-in
-  // user across every screen. Falls back to the `avatar` prop when logged out.
+  // for admins/super_admins, and the avatar initials/photo + name reflect the
+  // signed-in user across every screen. Falls back to the `avatar` prop when out.
   const [role, setRole] = useState<Role | null>(null);
   const [initials, setInitials] = useState<string>("");
   const [name, setName] = useState<string | null>(null);
+  const [photo, setPhoto] = useState<string | null>(null);
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -83,6 +87,7 @@ export function SiteHeader({
         setRole(acc.role);
         setInitials(initialsFrom(acc.fullName, acc.email));
         setName(acc.fullName);
+        setPhoto(acc.avatarUrl);
       } catch {
         /* not signed in / auth not configured */
       }
@@ -120,25 +125,27 @@ export function SiteHeader({
           </a>
         )}
 
-        <div className="hdr-actions">
-          {isAdminRole(role) && (
-            <a className="hdr-btn" href="/admin-backend" aria-label="Backend de administración" title="Backend de administración">
-              <GhostIcon />
+        {actions && (
+          <div className="hdr-actions">
+            {isAdminRole(role) && (
+              <a className="hdr-btn" href="/admin-backend" aria-label="Backend de administración" title="Backend de administración">
+                <GhostIcon />
+              </a>
+            )}
+            <a className="hdr-btn" href="/profile#preferencias" aria-label="Preferencias" title="Preferencias">
+              <GearIcon />
             </a>
-          )}
-          <a className="hdr-btn" href="/profile#preferencias" aria-label="Preferencias" title="Preferencias">
-            <GearIcon />
-          </a>
-          <button className="hdr-btn bell" aria-label="Notificaciones" title="Notificaciones">
-            <BellIcon />
-            <span className="bell-dot" aria-hidden="true" />
-          </button>
-          {shownAvatar && (
-            <a className="hdr-btn avatar" href="/profile" aria-label="Tu perfil" title={name ?? "Tu perfil"}>
-              {shownAvatar}
-            </a>
-          )}
-        </div>
+            <button className="hdr-btn bell" aria-label="Notificaciones" title="Notificaciones">
+              <BellIcon />
+              <span className="bell-dot" aria-hidden="true" />
+            </button>
+            {shownAvatar && (
+              <a className="hdr-btn avatar" href="/profile" aria-label="Tu perfil" title={name ?? "Tu perfil"}>
+                {photo ? <img className="hdr-avatar-img" src={photo} alt="" /> : shownAvatar}
+              </a>
+            )}
+          </div>
+        )}
       </div>
     </header>
   );

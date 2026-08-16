@@ -21,8 +21,8 @@ export default function LoginClient() {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (error) throw error;
-      // send admins to the backend, everyone else to their profile
-      window.location.href = "/admin-backend";
+      const next = new URLSearchParams(window.location.search).get("next");
+      window.location.href = next && next.startsWith("/") ? next : "/";
     } catch (e2) {
       setErr(e2 instanceof Error ? e2.message : "No se pudo iniciar sesión.");
       setBusy(false);
@@ -39,7 +39,7 @@ export default function LoginClient() {
         <span className="g9">entrar</span>
       </div>
 
-      <SiteHeader avatar="" />
+      <SiteHeader avatar="" actions={false} />
 
       <main className="shell">
         <div className="login-wrap">
@@ -57,6 +57,10 @@ export default function LoginClient() {
               <button className="btn" type="submit" disabled={busy}>
                 {busy ? "Entrando…" : "Entrar"}
               </button>
+            </div>
+            <div className="login-links">
+              <a href="/forgot-password">¿Olvidaste tu contraseña?</a>
+              <a href="/register">Crear cuenta</a>
             </div>
           </form>
         </div>
