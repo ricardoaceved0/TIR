@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import "./member.css";
 import { SiteHeader, SiteFooter } from "@/app/components/SiteChrome";
 import { Diagnostic } from "@/lib/prompt/diagnostic";
+import { createClient } from "@/lib/supabase/client";
 
 type ScreenId = "s1" | "s2" | "s3" | "s4" | "s5";
 
@@ -164,6 +165,21 @@ export default function MemberArea() {
     setAiState("loading");
     go("s2");
     try {
+      // Pull the CV the user marked active (/profile → Mis CVs). RLS scopes
+      // it to the signed-in user; empty if none/no session.
+      let cvText = "";
+      try {
+        const { data } = await createClient()
+          .from("cvs")
+          .select("markdown")
+          .eq("is_active", true)
+          .limit(1)
+          .maybeSingle();
+        cvText = (data?.markdown as string) ?? "";
+      } catch {
+        /* no session / table missing → JD-only */
+      }
+
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -175,9 +191,7 @@ export default function MemberArea() {
           stage,
           linkedinUrl: liUrl,
           tools,
-          // TODO: attach the candidate's converted CV (from /profile → Mis CVs)
-          // once it's persisted, so box_1 scores against the real CV.
-          cv_text: "",
+          cv_text: cvText,
         }),
       });
       const data = await res.json().catch(() => null);

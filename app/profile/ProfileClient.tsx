@@ -84,7 +84,7 @@ function loadPrefs(): Prefs {
 
 /* ─────────────────────────── component ─────────────────────────── */
 
-type CvItem = { id: string; filename: string; markdown: string };
+type CvItem = { id: string; filename: string; markdown: string; isActive: boolean };
 
 export default function ProfileClient() {
   const [section, setSection] = useState<SectionId>("main");
@@ -179,7 +179,7 @@ export default function ProfileClient() {
 
           <div className="pf-panel">
             {section === "main" && <MainPanel account={account} />}
-            {section === "cvs" && <CvsPanel hasSession={!!account?.id} />}
+            {section === "cvs" && <CvsPanel account={account} />}
             {section === "prefs" && <PrefsPanel />}
             {section === "sub" && <SubPanel />}
           </div>
@@ -343,7 +343,8 @@ function MainPanel({ account }: { account: Account | null }) {
 
 /* ─────────────────────────── Mis CVs ─────────────────────────── */
 
-function CvsPanel({ hasSession }: { hasSession: boolean }) {
+function CvsPanel({ account }: { account: Account | null }) {
+  const hasSession = !!account?.id;
   const [items, setItems] = useState<CvItem[]>([]);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
@@ -352,33 +353,116 @@ function CvsPanel({ hasSession }: { hasSession: boolean }) {
   const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
-  const convert = useCallback(async (file: File) => {
-    setErr("");
-    const ext = file.name.split(".").pop()?.toLowerCase();
-    if (ext !== "pdf" && ext !== "docx") {
-      setErr("Solo PDF o DOCX por ahora.");
-      return;
-    }
-    setBusy(true);
+  // Load the user's saved CVs from Supabase.
+  useEffect(() => {
+    if (!account?.id) return;
+    let alive = true;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from("cvs")
+          .select("id, filename, markdown, is_active")
+          .eq("user_id", account.id)
+          .order("created_at", { ascending: false });
+        if (alive && data) {
+          setItems(
+            data.map((r) => ({
+              id: String(r.id),
+              filename: r.filename ?? "cv",
+              markdown: r.markdown ?? "",
+              isActive: Boolean(r.is_active),
+            }))
+          );
+        }
+      } catch {
+        /* table missing / no session — stays empty */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [account?.id]);
+
+  const convert = useCallback(
+    async (file: File) => {
+      setErr("");
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      if (ext !== "pdf" && ext !== "docx") {
+        setErr("Solo PDF o DOCX por ahora.");
+        return;
+      }
+      setBusy(true);
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/cv/convert", { method: "POST", body: fd });
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+        const filename = (data.filename || file.name) as string;
+        const markdown = data.markdown as string;
+
+        // Persist to Supabase; the first CV becomes the active one.
+        if (account?.id) {
+          const makeActive = items.length === 0;
+          const supabase = createClient();
+          const { data: row, error } = await supabase
+            .from("cvs")
+            .insert({ user_id: account.id, filename, markdown, is_active: makeActive })
+            .select("id")
+            .single();
+          if (error) throw error;
+          const item: CvItem = { id: String(row.id), filename, markdown, isActive: makeActive };
+          setItems((xs) => [item, ...xs]);
+          setOpenId(item.id);
+        } else {
+          const item: CvItem = {
+            id: `local-${Date.now()}`,
+            filename,
+            markdown,
+            isActive: items.length === 0,
+          };
+          setItems((xs) => [item, ...xs]);
+          setOpenId(item.id);
+        }
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : "No se pudo convertir.");
+      } finally {
+        setBusy(false);
+      }
+    },
+    [account?.id, items.length]
+  );
+
+  const setActive = async (id: string) => {
+    setItems((xs) => xs.map((x) => ({ ...x, isActive: x.id === id })));
+    if (!account?.id) return;
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/cv/convert", { method: "POST", body: fd });
-      const data = await res.json().catch(() => null);
-      if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
-      const item: CvItem = {
-        id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-        filename: data.filename || file.name,
-        markdown: data.markdown as string,
-      };
-      setItems((xs) => [item, ...xs]);
-      setOpenId(item.id);
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "No se pudo convertir.");
-    } finally {
-      setBusy(false);
+      const supabase = createClient();
+      await supabase.from("cvs").update({ is_active: false }).eq("user_id", account.id);
+      await supabase.from("cvs").update({ is_active: true }).eq("id", id);
+    } catch {
+      setErr("No se pudo marcar el CV activo.");
     }
-  }, []);
+  };
+
+  const remove = async (id: string) => {
+    const wasActive = items.find((x) => x.id === id)?.isActive;
+    const rest = items.filter((x) => x.id !== id);
+    // if we deleted the active one, promote the newest remaining
+    if (wasActive && rest.length && !rest.some((x) => x.isActive)) rest[0].isActive = true;
+    setItems([...rest]);
+    if (!account?.id) return;
+    try {
+      const supabase = createClient();
+      await supabase.from("cvs").delete().eq("id", id);
+      if (wasActive && rest.length) {
+        await supabase.from("cvs").update({ is_active: true }).eq("id", rest[0].id);
+      }
+    } catch {
+      /* ignore */
+    }
+  };
 
   const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -409,7 +493,7 @@ function CvsPanel({ hasSession }: { hasSession: boolean }) {
 
   return (
     <>
-      <PanelHead title="Mis CVs" hint="Sube tu hoja de vida en PDF o DOCX y la sala la convierte a Markdown limpio, listo para leer y editar." />
+      <PanelHead title="Mis CVs" hint="Sube tu hoja de vida en PDF o DOCX y la sala la convierte a Markdown (cv_text) — la versión que el AI lee mejor. Marca cuál usar para tu diagnóstico." />
 
       <div
         className={`pf-drop${dragOver ? " over" : ""}${busy ? " busy" : ""}`}
@@ -438,7 +522,7 @@ function CvsPanel({ hasSession }: { hasSession: boolean }) {
       </div>
       {err && <p className="pf-msg err">{err}</p>}
       {!hasSession && items.length > 0 && (
-        <p className="pf-help">La conversión funciona sin sesión; para guardar tus CVs en tu biblioteca inicia sesión.</p>
+        <p className="pf-help">Inicia sesión para guardar tus CVs y marcar el activo.</p>
       )}
 
       <div className="pf-cvlist">
@@ -446,11 +530,19 @@ function CvsPanel({ hasSession }: { hasSession: boolean }) {
           <p className="pf-empty">Todavía no has subido ningún CV.</p>
         )}
         {items.map((item) => (
-          <div className="pf-cv" key={item.id}>
+          <div className={`pf-cv${item.isActive ? " active" : ""}`} key={item.id}>
             <div className="pf-cv-head">
-              <span className="pf-cv-ico" aria-hidden="true"><IconDoc /></span>
+              <button
+                className={`pf-cv-use${item.isActive ? " on" : ""}`}
+                onClick={() => setActive(item.id)}
+                aria-pressed={item.isActive}
+                title={item.isActive ? "CV activo para el diagnóstico" : "Usar este CV para el diagnóstico"}
+              >
+                <span className="pf-cv-radio" aria-hidden="true" />
+                {item.isActive ? "En uso" : "Usar"}
+              </button>
               <span className="pf-cv-name">{item.filename}</span>
-              <span className="pf-cv-badge">Markdown</span>
+              {item.isActive && <span className="pf-cv-badge">Activo</span>}
               <div className="pf-cv-actions">
                 <button className="pf-linkbtn" onClick={() => setOpenId((id) => (id === item.id ? null : item.id))}>
                   {openId === item.id ? "Ocultar" : "Ver"}
@@ -459,6 +551,7 @@ function CvsPanel({ hasSession }: { hasSession: boolean }) {
                   {copiedId === item.id ? "¡Copiado!" : "Copiar"}
                 </button>
                 <button className="pf-linkbtn" onClick={() => download(item)}>Descargar .md</button>
+                <button className="pf-linkbtn danger" onClick={() => remove(item.id)}>Eliminar</button>
               </div>
             </div>
             {openId === item.id && <pre className="pf-md">{item.markdown}</pre>}
