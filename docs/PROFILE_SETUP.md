@@ -5,7 +5,7 @@ The `/profile` page (Layout: left sidebar) ships with four sections:
 | Section | Status today | To go live |
 |---|---|---|
 | **Cuenta** — name, avatar, email, password | UI complete; save calls `supabase.auth.updateUser` + `profiles` upsert, guarded on a session | Enable auth + run the migration |
-| **Mis CVs** — upload → Markdown | **Fully functional now** via `POST /api/cv/convert` (PDF + DOCX, server-side) | Optional: persist results to the `cvs` table + `cvs` bucket |
+| **Mis CVs** — upload → Markdown, persisted, pick the active one | Converts via `POST /api/cv/convert`; saves each CV to the `cvs` table; "Usar/En uso" marks one active (`cvs.is_active`). The active CV's Markdown is sent as `cv_text` to `/api/analyze` for the diagnostic. | Run `0003_cv_active.sql`; needs auth |
 | **Preferencias** — text size, language, reduce motion | **Functional now**, stored in `localStorage` | Mirror to `profiles.preferences` on save |
 | **Subscripción** — plan, credits, billing | UI complete with demo data | Read from `subscriptions`; write via Stripe webhook |
 
