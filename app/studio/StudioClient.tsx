@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import "../member/member.css";
 import "./studio.css";
-import { SiteHeader, SiteFooter } from "@/app/components/SiteChrome";
+import { AdminPanelHead } from "@/app/components/AdminShell";
 import {
   DEFAULT_PROMPT_CONFIG,
   MODEL_OPTIONS,
@@ -68,50 +68,26 @@ export default function StudioClient() {
   const resetDefaults = () => setCfg(DEFAULT_PROMPT_CONFIG);
 
   return (
-    <div className="tir">
-      <div className="ghost-bg" aria-hidden="true">
-        <span className="g1">prompt</span>
-        <span className="g2">sistema /sisˈtema/</span>
-        <span className="g3">instrucciones especiales</span>
-        <span className="g4">rol</span>
-        <span className="g5">restricción /restɾikˈθjon/</span>
-        <span className="g6">temperature</span>
-        <span className="g7">variables</span>
-        <span className="g8">output</span>
-        <span className="g9">model /ˈmɒdəl/</span>
-        <span className="g10">la sala</span>
+    <>
+      <div className="st-topbar">
+        <AdminPanelHead
+          title="AI Studio"
+          hint="Define las “instrucciones especiales” que la sala mezcla con la Entrada del candidato antes de llamar al modelo."
+        />
+        <div className={`st-status ${persisted ? "ok" : "warn"}`}>
+          <span className="st-dot" aria-hidden="true" />
+          <span className="st-status-txt">
+            {loading
+              ? "Cargando…"
+              : persisted
+              ? "Guardado en Supabase"
+              : "Sin persistir · valores por defecto"}
+          </span>
+          {note && <span className="st-note">{note}</span>}
+        </div>
       </div>
 
-      <SiteHeader avatar="BK" />
-
-      <main className="shell st-shell">
-        <div className="st-hero">
-          <div>
-            <div className="eyebrow">The Interview Room · Backend</div>
-            <h1 className="display">
-              Prompt <em>Studio</em>
-            </h1>
-            <p className="lede">
-              Define las “instrucciones especiales” que la sala mezcla con la Entrada del
-              candidato antes de llamar al modelo.
-            </p>
-          </div>
-          <div className={`st-status ${persisted ? "ok" : "warn"}`}>
-            <span className="st-dot" aria-hidden="true" />
-            <span className="st-status-txt">
-              {loading
-                ? "Cargando…"
-                : persisted
-                ? "Guardado en Supabase"
-                : "Sin persistir · valores por defecto"}
-            </span>
-            {note && <span className="st-note">{note}</span>}
-          </div>
-        </div>
-
-        <div className="kicker-rule" />
-
-        {/* 1 · Rol */}
+      {/* 1 · Rol */}
         <Section title="Rol" hint="Un bloque de texto para definir la persona (p. ej. “Eres un entrevistador ejecutivo de élite y coach de carrera…”).">
           <textarea
             className="txt mono"
@@ -220,10 +196,7 @@ export default function StudioClient() {
             </button>
           </div>
         </div>
-
-        <SiteFooter />
-      </main>
-    </div>
+    </>
   );
 }
 

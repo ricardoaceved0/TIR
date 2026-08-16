@@ -35,9 +35,13 @@ function GhostMark() {
  */
 export default function AdminShell({
   active,
+  bare = false,
   children,
 }: {
   active?: AdminKey;
+  /** When true the content renders without the `.pf-panel` card wrapper
+   *  (for pages like /studio that provide their own section cards). */
+  bare?: boolean;
   children: React.ReactNode;
 }) {
   const [role, setRole] = useState<Role | null | undefined>(undefined); // undefined = checking
@@ -114,7 +118,11 @@ export default function AdminShell({
               ))}
             </nav>
 
-            <div className="pf-panel">{children}</div>
+            {bare ? (
+              <div className="adm-bare">{children}</div>
+            ) : (
+              <div className="pf-panel">{children}</div>
+            )}
           </div>
         )}
 
