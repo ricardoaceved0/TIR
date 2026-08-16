@@ -29,9 +29,12 @@ export type PromptConfig = {
  * current free flash model. Claude is wired for later (provider swap in
  * lib/ai), so it's shown but disabled for now.
  */
+// Google keeps retiring specific model IDs; the server auto-falls-back to a
+// working model if the chosen one 404s (see lib/ai/generateAnalysis). The
+// "-latest" alias tracks the current stable flash.
 export const MODEL_OPTIONS: { id: string; label: string; available: boolean }[] = [
+  { id: "gemini-flash-latest", label: "gemini-flash-latest (auto)", available: true },
   { id: "gemini-2.5-flash", label: "gemini-2.5-flash", available: true },
-  { id: "gemini-2.5-pro", label: "gemini-2.5-pro", available: true },
   { id: "claude-opus-5", label: "claude-opus-5", available: false },
 ];
 
@@ -53,7 +56,7 @@ export const DEFAULT_PROMPT_CONFIG: PromptConfig = {
     "- Respondé en {{user.preferred_language}}.",
   technical:
     "La respuesta debe ser JSON estricto que cumpla el contrato de salida (box_1, gap, adjetivo, resultado, question_set).",
-  model: "gemini-2.5-flash",
+  model: "gemini-flash-latest",
   temperature: 0.2,
   outputInstructions:
     "Producí:\n" +

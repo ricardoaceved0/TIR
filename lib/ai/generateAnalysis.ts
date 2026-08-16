@@ -8,7 +8,12 @@
  */
 import { PromptConfig, applyVariables } from "@/lib/prompt/config";
 import { Intake, intakeToText } from "@/lib/prompt/intake";
-import { callGemini } from "@/lib/ai/gemini";
+import {
+  callGemini,
+  isModelUnavailable,
+  listGenerateContentModels,
+  pickBestModel,
+} from "@/lib/ai/gemini";
 import {
   Diagnostic,
   DIAGNOSTIC_CONTRACT,
@@ -22,6 +27,9 @@ export type AnalysisResult = {
   /** Model actually used. */
   model: string;
 };
+
+// Cache the model we discovered works, so we don't re-list on every request.
+let resolvedModel: string | null = null;
 
 /** Build the system instruction from the editable Studio config. */
 export function buildSystemInstruction(config: PromptConfig, intake: Intake): string {
@@ -46,26 +54,41 @@ export async function generateAnalysis(
   const system = `${buildSystemInstruction(config, intake)}\n\n${DIAGNOSTIC_CONTRACT}`;
   const userContent = intakeToText(intake);
 
-  // Guard against a stale/invalid saved model (e.g. the retired
-  // "gemini-3.5-flash") — fall back to a real Gemini model.
-  const model =
-    config.model.startsWith("gemini-") && config.model !== "gemini-3.5-flash"
-      ? config.model
-      : "gemini-2.5-flash";
+  const call = (model: string) =>
+    callGemini({
+      model,
+      temperature: config.temperature,
+      system,
+      userContent,
+      responseMimeType: "application/json",
+      responseSchema: DIAGNOSTIC_SCHEMA,
+      maxOutputTokens: 8192,
+      // Disable "thinking" on flash models so the whole budget goes to the JSON.
+      ...(/flash/i.test(model) ? { thinkingBudget: 0 } : {}),
+    });
 
-  // Provider dispatch. Only Gemini is wired for the POC; Claude is the
-  // planned production swap (see lib/prompt/config MODEL_OPTIONS).
-  const text = await callGemini({
-    model,
-    temperature: config.temperature,
-    system,
-    userContent,
-    responseMimeType: "application/json",
-    responseSchema: DIAGNOSTIC_SCHEMA,
-    maxOutputTokens: 8192,
-    // Disable "thinking" on 2.5-flash so the whole budget goes to the JSON.
-    ...(model.startsWith("gemini-2.5-flash") ? { thinkingBudget: 0 } : {}),
-  });
+  // Google keeps retiring model IDs (e.g. gemini-2.5-flash → 404 for new
+  // keys). Try the configured/last-good model; if it's unavailable, ask the
+  // key which models it has and pick a working flash, then cache it.
+  const preferred = resolvedModel || config.model;
+  let model = preferred;
+  let text: string;
+  try {
+    text = await call(preferred);
+  } catch (e) {
+    if (!isModelUnavailable(e)) throw e;
+    const available = await listGenerateContentModels();
+    const pick = pickBestModel(available);
+    if (!pick) {
+      throw new Error(
+        `El modelo "${preferred}" no está disponible y no encontré otro. ` +
+          (available.length ? `Disponibles: ${available.join(", ")}` : "La API no devolvió modelos.")
+      );
+    }
+    resolvedModel = pick;
+    model = pick;
+    text = await call(pick);
+  }
 
   return { diagnostic: parseDiagnostic(text), model };
 }

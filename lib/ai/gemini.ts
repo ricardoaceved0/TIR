@@ -100,3 +100,46 @@ export async function callGemini({
   }
   return text;
 }
+
+/** True when an error looks like "model not found / not available to this key". */
+export function isModelUnavailable(err: unknown): boolean {
+  const s = err instanceof Error ? err.message : String(err);
+  return /HTTP 404|NOT_FOUND|no longer available|not found|is not supported/i.test(s);
+}
+
+/** List model IDs this API key can call with generateContent. */
+export async function listGenerateContentModels(): Promise<string[]> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) return [];
+  try {
+    const res = await fetch(`${API_ROOT}/models?key=${key}&pageSize=1000`, { cache: "no-store" });
+    if (!res.ok) return [];
+    const data = (await res.json()) as {
+      models?: { name?: string; supportedGenerationMethods?: string[] }[];
+    };
+    return (data.models ?? [])
+      .filter((m) => (m.supportedGenerationMethods ?? []).includes("generateContent"))
+      .map((m) => (m.name ?? "").replace(/^models\//, ""))
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+/** Pick the best general-purpose flash model from a list of available IDs. */
+export function pickBestModel(models: string[]): string | null {
+  const usable = models.filter(
+    (m) => /gemini/i.test(m) && !/(embedding|aqa|image|imagen|tts|audio|live|vision|thinking|exp)/i.test(m)
+  );
+  const score = (m: string) => {
+    let s = /latest/i.test(m) ? 1000 : 0;
+    const ver = m.match(/(\d+(?:\.\d+)?)/);
+    if (ver) s += parseFloat(ver[1]) * 10;
+    if (/flash/i.test(m)) s += 5;
+    if (/lite/i.test(m)) s -= 3;
+    if (/preview/i.test(m)) s -= 1;
+    return s;
+  };
+  const pool = usable.length ? usable : models;
+  return pool.sort((a, b) => score(b) - score(a))[0] ?? null;
+}
