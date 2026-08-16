@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "../member/member.css";
 import "./studio.css";
 import { AdminPanelHead } from "@/app/components/AdminShell";
@@ -19,31 +19,36 @@ export default function StudioClient() {
   const [persisted, setPersisted] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveMsg, setSaveMsg] = useState("");
+  const [profile, setProfile] = useState(1); // active profile slot 1–4
+
+  // Load a profile's saved config from Supabase (falls back to defaults).
+  const loadProfile = useCallback(async (n: number) => {
+    setProfile(n);
+    setLoading(true);
+    setSaveMsg("");
+    setSaveState("idle");
+    try {
+      const res = await fetch(`/api/prompt-config?profile=${n}`, { cache: "no-store" });
+      const data = await res.json();
+      if (data?.config) setCfg(data.config as PromptConfig);
+      setPersisted(Boolean(data?.persisted));
+      setNote(data?.note ?? "");
+    } catch {
+      setCfg(DEFAULT_PROMPT_CONFIG);
+      setNote("No se pudo cargar la configuración; mostrando valores por defecto.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        const res = await fetch("/api/prompt-config", { cache: "no-store" });
-        const data = await res.json();
-        if (!alive) return;
-        if (data?.config) setCfg(data.config as PromptConfig);
-        setPersisted(Boolean(data?.persisted));
-        setNote(data?.note ?? "");
-      } catch {
-        if (alive) setNote("No se pudo cargar la configuración; mostrando valores por defecto.");
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
+    loadProfile(1);
+  }, [loadProfile]);
 
   const set = <K extends keyof PromptConfig>(key: K, value: PromptConfig[K]) =>
     setCfg((c) => ({ ...c, [key]: value }));
 
+  // Save the current form into the active profile slot (overwrites it).
   const save = async () => {
     setSaveState("saving");
     setSaveMsg("");
@@ -51,13 +56,13 @@ export default function StudioClient() {
       const res = await fetch("/api/prompt-config", {
         method: "PUT",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(cfg),
+        body: JSON.stringify({ ...cfg, profile }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
       setSaveState("saved");
       setPersisted(true);
-      setSaveMsg("Guardado.");
+      setSaveMsg(`Perfil ${profile} guardado.`);
       setTimeout(() => setSaveState("idle"), 2500);
     } catch (e) {
       setSaveState("error");
@@ -65,7 +70,16 @@ export default function StudioClient() {
     }
   };
 
-  const resetDefaults = () => setCfg(DEFAULT_PROMPT_CONFIG);
+  // Empty every field (does not save until you press Guardar).
+  const clearAll = () =>
+    setCfg((c) => ({
+      ...c,
+      role: "",
+      constraints: "",
+      technical: "",
+      outputInstructions: "",
+      temperature: 0,
+    }));
 
   return (
     <>
@@ -184,10 +198,26 @@ export default function StudioClient() {
         </Section>
 
         <div className="st-actions">
-          <button className="btn ghost" type="button" onClick={resetDefaults}>
-            Restaurar valores por defecto
+          <button className="btn ghost" type="button" onClick={clearAll}>
+            Limpiar todos los campos
           </button>
           <div className="st-actions-right">
+            <div className="st-profiles" role="group" aria-label="Perfiles de instrucciones">
+              <span className="st-profiles-lbl">Perfiles</span>
+              {[1, 2, 3, 4].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  className={`st-profile${profile === n ? " on" : ""}`}
+                  aria-pressed={profile === n}
+                  title={`Cargar perfil ${n}`}
+                  onClick={() => loadProfile(n)}
+                  disabled={loading}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
             {saveMsg && (
               <span className={`st-savemsg ${saveState === "error" ? "err" : "ok"}`}>{saveMsg}</span>
             )}

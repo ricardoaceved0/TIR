@@ -11,8 +11,9 @@ import { loadPromptConfig, savePromptConfig } from "@/lib/prompt/store";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  const { config, persisted, note } = await loadPromptConfig();
+export async function GET(req: Request) {
+  const profile = Number(new URL(req.url).searchParams.get("profile") ?? 1);
+  const { config, persisted, note } = await loadPromptConfig(profile);
   return NextResponse.json({ config, persisted, note });
 }
 
@@ -24,8 +25,9 @@ export async function PUT(req: Request) {
     return NextResponse.json({ ok: false, error: "JSON inválido." }, { status: 400 });
   }
 
+  const profile = Number((body as { profile?: unknown })?.profile ?? 1);
   const config = normalizeConfig(body);
-  const { ok, note } = await savePromptConfig(config);
+  const { ok, note } = await savePromptConfig(config, profile);
   if (!ok) {
     return NextResponse.json({ ok: false, error: note ?? "No se pudo guardar." }, { status: 502 });
   }

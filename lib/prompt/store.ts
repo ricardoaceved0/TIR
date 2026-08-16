@@ -12,7 +12,14 @@ import {
 } from "@/lib/prompt/config";
 
 const TABLE = "prompt_config";
-const ROW_ID = 1;
+
+/** There are 4 saveable profiles, stored as rows id = 1..4. Profile 1 is the
+ *  "live" one the analysis pipeline reads. */
+export const PROFILE_COUNT = 4;
+function clampProfile(p: number): number {
+  const n = Math.floor(Number(p));
+  return Number.isFinite(n) ? Math.min(PROFILE_COUNT, Math.max(1, n)) : 1;
+}
 
 function supabaseConfigured(): boolean {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -33,9 +40,9 @@ function rowToConfig(row: Record<string, unknown>): PromptConfig {
 }
 
 /** PromptConfig → DB row. */
-function configToRow(config: PromptConfig): Record<string, unknown> {
+function configToRow(config: PromptConfig, id: number): Record<string, unknown> {
   return {
-    id: ROW_ID,
+    id,
     role: config.role,
     constraints: config.constraints,
     technical: config.technical,
@@ -48,7 +55,7 @@ function configToRow(config: PromptConfig): Record<string, unknown> {
 
 export type LoadResult = { config: PromptConfig; persisted: boolean; note?: string };
 
-export async function loadPromptConfig(): Promise<LoadResult> {
+export async function loadPromptConfig(profile = 1): Promise<LoadResult> {
   if (!supabaseConfigured()) {
     return {
       config: DEFAULT_PROMPT_CONFIG,
@@ -57,8 +64,9 @@ export async function loadPromptConfig(): Promise<LoadResult> {
     };
   }
   try {
+    const id = clampProfile(profile);
     const supabase = await createClient();
-    const { data, error } = await supabase.from(TABLE).select("*").eq("id", ROW_ID).maybeSingle();
+    const { data, error } = await supabase.from(TABLE).select("*").eq("id", id).maybeSingle();
     if (error) {
       return { config: DEFAULT_PROMPT_CONFIG, persisted: false, note: error.message };
     }
@@ -77,13 +85,14 @@ export async function loadPromptConfig(): Promise<LoadResult> {
 
 export type SaveResult = { ok: boolean; note?: string };
 
-export async function savePromptConfig(config: PromptConfig): Promise<SaveResult> {
+export async function savePromptConfig(config: PromptConfig, profile = 1): Promise<SaveResult> {
   if (!supabaseConfigured()) {
     return { ok: false, note: "Supabase no está configurado. Agrega las llaves para guardar." };
   }
   try {
+    const id = clampProfile(profile);
     const supabase = await createClient();
-    const { error } = await supabase.from(TABLE).upsert(configToRow(config), { onConflict: "id" });
+    const { error } = await supabase.from(TABLE).upsert(configToRow(config, id), { onConflict: "id" });
     if (error) return { ok: false, note: error.message };
     return { ok: true };
   } catch (e) {
