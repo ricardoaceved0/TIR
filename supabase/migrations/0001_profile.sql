@@ -1,5 +1,6 @@
 -- ============================================================
 -- Profile feature — schema, RLS, and storage.
+-- Idempotent: safe to re-run (drops each policy before creating it).
 -- Run in the Supabase SQL editor (or `supabase db push`) once you
 -- want the /profile writes to persist. Requires email auth enabled.
 -- See docs/PROFILE_SETUP.md.
@@ -16,6 +17,9 @@ create table if not exists public.profiles (
 
 alter table public.profiles enable row level security;
 
+drop policy if exists "profiles: owner reads"   on public.profiles;
+drop policy if exists "profiles: owner inserts" on public.profiles;
+drop policy if exists "profiles: owner updates" on public.profiles;
 create policy "profiles: owner reads"   on public.profiles for select using (auth.uid() = id);
 create policy "profiles: owner inserts" on public.profiles for insert with check (auth.uid() = id);
 create policy "profiles: owner updates" on public.profiles for update using (auth.uid() = id);
@@ -48,6 +52,9 @@ create table if not exists public.cvs (
 
 alter table public.cvs enable row level security;
 
+drop policy if exists "cvs: owner reads"   on public.cvs;
+drop policy if exists "cvs: owner inserts" on public.cvs;
+drop policy if exists "cvs: owner deletes" on public.cvs;
 create policy "cvs: owner reads"   on public.cvs for select using (auth.uid() = user_id);
 create policy "cvs: owner inserts" on public.cvs for insert with check (auth.uid() = user_id);
 create policy "cvs: owner deletes" on public.cvs for delete using (auth.uid() = user_id);
@@ -66,6 +73,7 @@ create table if not exists public.subscriptions (
 
 alter table public.subscriptions enable row level security;
 
+drop policy if exists "subs: owner reads" on public.subscriptions;
 create policy "subs: owner reads" on public.subscriptions for select using (auth.uid() = user_id);
 -- writes come from the server (Stripe webhook / service role), not the client.
 
@@ -81,6 +89,9 @@ values ('cvs', 'cvs', false)
 on conflict (id) do nothing;
 
 -- object policies: users may manage only files under a folder named by their uid
+drop policy if exists "avatars: owner writes"  on storage.objects;
+drop policy if exists "avatars: owner updates" on storage.objects;
+drop policy if exists "avatars: public reads"  on storage.objects;
 create policy "avatars: owner writes" on storage.objects for insert
   with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
 create policy "avatars: owner updates" on storage.objects for update
@@ -88,6 +99,9 @@ create policy "avatars: owner updates" on storage.objects for update
 create policy "avatars: public reads" on storage.objects for select
   using (bucket_id = 'avatars');
 
+drop policy if exists "cvs: owner writes"  on storage.objects;
+drop policy if exists "cvs: owner reads"   on storage.objects;
+drop policy if exists "cvs: owner deletes" on storage.objects;
 create policy "cvs: owner writes" on storage.objects for insert
   with check (bucket_id = 'cvs' and (storage.foldername(name))[1] = auth.uid()::text);
 create policy "cvs: owner reads" on storage.objects for select
