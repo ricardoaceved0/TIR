@@ -133,7 +133,7 @@ export default function MemberArea() {
 
   // Entrada: collapsible interview-configuration section
   const [cfgOpen, setCfgOpen] = useState(false);
-  const [stage, setStage] = useState(STAGES[0].v);
+  const [stage, setStage] = useState(""); // optional — none selected by default
   const [liUrl, setLiUrl] = useState("");
   const [tools, setTools] = useState<string[]>([]);
   const [toolDraft, setToolDraft] = useState("");
@@ -376,7 +376,7 @@ export default function MemberArea() {
                           type="button"
                           className="seg"
                           aria-pressed={stage === s.v}
-                          onClick={() => setStage(s.v)}
+                          onClick={() => setStage((v) => (v === s.v ? "" : s.v))}
                         >
                           {s.full}
                         </button>
@@ -391,7 +391,7 @@ export default function MemberArea() {
                           className="vrow"
                           role="radio"
                           aria-checked={stage === s.v}
-                          onClick={() => setStage(s.v)}
+                          onClick={() => setStage((v) => (v === s.v ? "" : s.v))}
                         >
                           <span className="rdot" aria-hidden="true" />
                           <span className="vl">{s.short}</span>
