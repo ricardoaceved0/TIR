@@ -134,6 +134,7 @@ type CvItem = { id: string; filename: string; markdown: string; isActive: boolea
 
 export default function ProfileClient() {
   const [section, setSection] = useState<SectionId>("main");
+  const [navOpen, setNavOpen] = useState(false);
   const [account, setAccount] = useState<Account | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
 
@@ -165,10 +166,14 @@ export default function ProfileClient() {
 
   const goSection = (id: SectionId) => {
     setSection(id);
+    setNavOpen(false);
     const s = SECTIONS.find((x) => x.id === id);
     if (s) history.replaceState(null, "", `#${s.hash}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  const activeSection = SECTIONS.find((s) => s.id === section) ?? SECTIONS[0];
+  const ActiveIcon = ICONS[activeSection.id];
 
   return (
     <div className="tir">
@@ -203,6 +208,43 @@ export default function ProfileClient() {
         )}
 
         <div className="pf-layout">
+          {/* mobile: custom dropdown (the desktop rail is hidden ≤760px) */}
+          <div className="pf-navmobile">
+            <button
+              className="pf-navsel"
+              aria-expanded={navOpen}
+              onClick={() => setNavOpen((o) => !o)}
+            >
+              <span className="pf-navico" aria-hidden="true"><ActiveIcon /></span>
+              <span className="pf-navsel-label">{activeSection.label}</span>
+              <span className="pf-navsel-chev" aria-hidden="true">{navOpen ? "▴" : "▾"}</span>
+            </button>
+            {navOpen && (
+              <>
+                <div className="pf-navbackdrop" onClick={() => setNavOpen(false)} aria-hidden="true" />
+                <div className="pf-navmenu" role="menu">
+                  {SECTIONS.map((s) => {
+                    const Icon = ICONS[s.id];
+                    return (
+                      <button
+                        key={s.id}
+                        className={`pf-navitem${section === s.id ? " on" : ""}`}
+                        aria-current={section === s.id ? "page" : undefined}
+                        onClick={() => goSection(s.id)}
+                      >
+                        <span className="pf-navico" aria-hidden="true"><Icon /></span>
+                        <span className="pf-navtext">
+                          <span className="pf-navlabel">{s.label}</span>
+                          <span className="pf-navsub">{s.sub}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+
           <nav className="pf-nav" aria-label="Secciones del perfil">
             {SECTIONS.map((s) => {
               const Icon = ICONS[s.id];

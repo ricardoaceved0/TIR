@@ -35,6 +35,8 @@
   flex-direction: column;
   gap: 6px;
 }
+/* mobile-only dropdown nav (shown ≤760px; desktop uses the rail above) */
+.tir .pf-navmobile { display: none; }
 .tir .pf-navitem {
   appearance: none;
   cursor: pointer;
@@ -475,9 +477,11 @@
   scroll-behavior: auto !important;
 }
 
-/* ---------- mobile: rail → horizontal pill row ---------- */
+/* ---------- mobile: rail → custom dropdown ---------- */
 @media (max-width: 760px) {
   .tir .pf-layout { grid-template-columns: 1fr; gap: 16px; }
+
+  /* Admin backend (no custom dropdown) keeps the horizontal pill row. */
   .tir .pf-nav {
     position: static;
     flex-direction: row;
@@ -487,8 +491,50 @@
     padding-bottom: 2px;
   }
   .tir .pf-nav::-webkit-scrollbar { display: none; }
-  .tir .pf-navitem { flex: none; padding: 10px 12px; }
-  .tir .pf-navsub { display: none; }
+  .tir .pf-nav .pf-navitem { flex: none; padding: 10px 12px; }
+  .tir .pf-nav .pf-navsub { display: none; }
+
+  /* Profile (has the dropdown) hides the rail and shows the dropdown. */
+  .tir .pf-layout:has(.pf-navmobile) .pf-nav { display: none; }
+  .tir .pf-navmobile { display: block; position: relative; }
+  .tir .pf-navsel {
+    appearance: none;
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1.5px solid var(--hair);
+    background: var(--paper);
+    color: var(--ink);
+    font-family: inherit;
+    text-align: left;
+  }
+  .tir .pf-navsel-label { font-size: 14px; font-weight: 600; flex: 1; min-width: 0; }
+  .tir .pf-navsel-chev { color: var(--muted); font-size: 12px; }
+  .tir .pf-navbackdrop { position: fixed; inset: 0; z-index: 30; }
+  .tir .pf-navmenu {
+    position: absolute;
+    z-index: 31;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    background: var(--paper);
+    border: 1.5px solid var(--hair);
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(28, 28, 28, 0.16);
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+  .tir .pf-navmenu .pf-navitem { width: 100%; }
+  .tir .pf-navmenu .pf-navsub { display: block; }
+
   .tir .pf-panel { padding: 20px; }
   .tir .pf-two { grid-template-columns: 1fr; }
   .tir .pf-bill-row { grid-template-columns: 1fr auto; }
