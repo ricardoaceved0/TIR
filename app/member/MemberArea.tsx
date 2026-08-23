@@ -157,6 +157,50 @@ export default function MemberArea() {
   const [diagnostic, setDiagnostic] = useState<Diagnostic | null>(null);
   const [aiError, setAiError] = useState("");
 
+  // Onboarding tracker ("Lo que la sala ya sabe de ti") — real completion of
+  // Hoja de Vida (a CV exists), Conocimientos, and Logros, plus the data the
+  // diagnostic feeds on. Refreshed each mount (profile edits are full navs).
+  const [onb, setOnb] = useState({ cv: false, know: false, logros: false });
+  const [lists, setLists] = useState<{
+    conocimientos: string[];
+    logros: { title: string; impact: string; year: string; detail: string }[];
+  }>({ conocimientos: [], logros: [] });
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) return;
+        const [cvsRes, profRes] = await Promise.all([
+          supabase.from("cvs").select("id").eq("user_id", user.id).limit(1),
+          supabase.from("profiles").select("knowledge, achievements").eq("id", user.id).maybeSingle(),
+        ]);
+        if (!alive) return;
+        const know = Array.isArray(profRes.data?.knowledge) ? (profRes.data!.knowledge as string[]) : [];
+        const logros = Array.isArray(profRes.data?.achievements)
+          ? (profRes.data!.achievements as { title: string; impact: string; year: string; detail: string }[])
+          : [];
+        setOnb({ cv: (cvsRes.data?.length ?? 0) > 0, know: know.length > 0, logros: logros.length > 0 });
+        setLists({ conocimientos: know, logros });
+      } catch {
+        /* not signed in */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const onbSteps = [
+    { n: 1, label: "Hoja de Vida", done: onb.cv, hash: "mis-cvs" },
+    { n: 2, label: "Conocimientos", done: onb.know, hash: "conocimientos" },
+    { n: 3, label: "Logros", done: onb.logros, hash: "logros" },
+  ];
+
   const submitEntrada = async () => {
     const val = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value.trim() || "";
     const jd = (document.getElementById("jd") as HTMLTextAreaElement | null)?.value.trim() || "";
@@ -192,6 +236,8 @@ export default function MemberArea() {
           linkedinUrl: liUrl,
           tools,
           cv_text: cvText,
+          conocimientos: lists.conocimientos,
+          logros: lists.logros,
         }),
       });
       const data = await res.json().catch(() => null);
@@ -294,29 +340,25 @@ export default function MemberArea() {
             <div className="card dark stack sabe-card">
               <h2 className="sect" style={{ color: "#fff" }}>Lo que la sala ya sabe de ti</h2>
               <div className="steps-prog">
-                <div className="pstep">
-                  <span className="pdot done" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-                  </span>
-                  <div className="pbody">
-                    <span className="pt">Hoja de Vida</span>
-                    <span className="ps done">Completado</span>
+                {onbSteps.map((s) => (
+                  <div className="pstep" key={s.n}>
+                    {s.done ? (
+                      <span className="pdot done" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                      </span>
+                    ) : (
+                      <span className="pdot todo" aria-hidden="true">{s.n}</span>
+                    )}
+                    <div className="pbody">
+                      <span className="pt">{s.label}</span>
+                      {s.done ? (
+                        <span className="ps done">Completado</span>
+                      ) : (
+                        <a className="plink" href={`/profile#${s.hash}`}>Completar →</a>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <div className="pstep">
-                  <span className="pdot todo" aria-hidden="true">2</span>
-                  <div className="pbody">
-                    <span className="pt">Conocimientos</span>
-                    <button type="button" className="plink">Completar →</button>
-                  </div>
-                </div>
-                <div className="pstep">
-                  <span className="pdot todo" aria-hidden="true">3</span>
-                  <div className="pbody">
-                    <span className="pt">Logros</span>
-                    <button type="button" className="plink">Completar →</button>
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
@@ -454,7 +496,12 @@ export default function MemberArea() {
             </div>
           </div>
 
-          <div className="row-actions end">
+          <div className="row-actions end entrada-send">
+            {!onb.cv && (
+              <p className="cv-nudge">
+                Sube tu CV en <a href="/profile#mis-cvs">tu perfil</a> para un diagnóstico más preciso.
+              </p>
+            )}
             <button className="btn" onClick={submitEntrada}>Enviar</button>
           </div>
         </section>

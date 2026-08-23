@@ -9,11 +9,21 @@ import { Account, fetchAccount, initialsFrom } from "@/lib/auth/roles";
 
 /* ─────────────────────────── sections ─────────────────────────── */
 
-type SectionId = "main" | "cvs" | "history" | "prefs" | "sub" | "privacy";
+type SectionId =
+  | "main"
+  | "cvs"
+  | "conocimientos"
+  | "logros"
+  | "history"
+  | "prefs"
+  | "sub"
+  | "privacy";
 
 const SECTIONS: { id: SectionId; hash: string; label: string; sub: string }[] = [
   { id: "main", hash: "cuenta", label: "Cuenta", sub: "Nombre, foto, correo y contraseña" },
   { id: "cvs", hash: "mis-cvs", label: "Mis CVs", sub: "Sube tu CV y conviértelo a Markdown" },
+  { id: "conocimientos", hash: "conocimientos", label: "Conocimientos", sub: "Skills y certificaciones fuera del CV" },
+  { id: "logros", hash: "logros", label: "Logros", sub: "Tus hitos y proyectos clave" },
   { id: "history", hash: "historial", label: "Historial", sub: "Tus análisis anteriores" },
   { id: "prefs", hash: "preferencias", label: "Preferencias", sub: "Texto, idioma y accesibilidad" },
   { id: "sub", hash: "subscripcion", label: "Subscripción", sub: "Plan, créditos y facturación" },
@@ -76,9 +86,27 @@ function IconShield() {
     </svg>
   );
 }
+function IconTag() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0l-7-7A2 2 0 0 1 3 12.2V5a2 2 0 0 1 2-2h7.2a2 2 0 0 1 1.4.6l7 7a2 2 0 0 1 0 2.8z" />
+      <circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+function IconTrophy() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0z" />
+      <path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3" />
+    </svg>
+  );
+}
 const ICONS: Record<SectionId, () => React.JSX.Element> = {
   main: IconAccount,
   cvs: IconDoc,
+  conocimientos: IconTag,
+  logros: IconTrophy,
   history: IconClock,
   prefs: IconSliders,
   sub: IconCard,
@@ -198,6 +226,8 @@ export default function ProfileClient() {
           <div className="pf-panel">
             {section === "main" && <MainPanel account={account} />}
             {section === "cvs" && <CvsPanel account={account} />}
+            {section === "conocimientos" && <ConocimientosPanel account={account} />}
+            {section === "logros" && <LogrosPanel account={account} />}
             {section === "history" && <HistoryPanel account={account} />}
             {section === "prefs" && <PrefsPanel />}
             {section === "sub" && <SubPanel />}
@@ -710,6 +740,200 @@ function SubPanel() {
           </div>
         ))}
       </div>
+    </>
+  );
+}
+
+/* ─────────────────────────── Conocimientos ─────────────────────────── */
+
+function ConocimientosPanel({ account }: { account: Account | null }) {
+  const [items, setItems] = useState<string[]>([]);
+  const [draft, setDraft] = useState("");
+  const [loaded, setLoaded] = useState(false);
+  const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+
+  useEffect(() => {
+    if (!account?.id) {
+      setLoaded(true);
+      return;
+    }
+    let alive = true;
+    (async () => {
+      try {
+        const { data } = await createClient()
+          .from("profiles")
+          .select("knowledge")
+          .eq("id", account.id)
+          .maybeSingle();
+        if (alive && Array.isArray(data?.knowledge)) setItems(data.knowledge as string[]);
+      } catch {
+        /* empty */
+      } finally {
+        if (alive) setLoaded(true);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [account?.id]);
+
+  const persist = async (next: string[]) => {
+    setItems(next);
+    if (!account?.id) return;
+    try {
+      const { error } = await createClient().from("profiles").upsert({ id: account.id, knowledge: next });
+      if (error) throw error;
+      setMsg({ kind: "ok", text: "Guardado." });
+      setTimeout(() => setMsg(null), 1500);
+    } catch (e) {
+      setMsg({ kind: "err", text: e instanceof Error ? e.message : "No se pudo guardar." });
+    }
+  };
+
+  const add = () => {
+    const t = draft.trim();
+    if (t && !items.includes(t)) persist([...items, t]);
+    setDraft("");
+  };
+  const remove = (t: string) => persist(items.filter((x) => x !== t));
+
+  return (
+    <>
+      <PanelHead title="Conocimientos" hint="Skills, herramientas y certificaciones que no aparecen en tu CV — por ejemplo SAP, EOS, PMP, Six Sigma. La sala las usa en tu diagnóstico y práctica." />
+      <div className="chips">
+        {items.map((t) => (
+          <span className="chip" key={t}>
+            {t}
+            <button type="button" className="x" aria-label={`Quitar ${t}`} onClick={() => remove(t)}>×</button>
+          </span>
+        ))}
+        <input
+          className="chipinput"
+          placeholder="+ Agregar…"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              add();
+            }
+          }}
+        />
+      </div>
+      {loaded && !account?.id && <p className="pf-help">Inicia sesión para guardar tus conocimientos.</p>}
+      {msg && <p className={`pf-msg ${msg.kind}`} style={{ marginTop: 10 }}>{msg.text}</p>}
+    </>
+  );
+}
+
+/* ─────────────────────────── Logros ─────────────────────────── */
+
+type Logro = { title: string; impact: string; year: string; detail: string };
+
+function LogrosPanel({ account }: { account: Account | null }) {
+  const [items, setItems] = useState<Logro[]>([]);
+  const [form, setForm] = useState<Logro>({ title: "", impact: "", year: "", detail: "" });
+  const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+
+  useEffect(() => {
+    if (!account?.id) return;
+    let alive = true;
+    (async () => {
+      try {
+        const { data } = await createClient()
+          .from("profiles")
+          .select("achievements")
+          .eq("id", account.id)
+          .maybeSingle();
+        if (alive && Array.isArray(data?.achievements)) setItems(data.achievements as Logro[]);
+      } catch {
+        /* empty */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [account?.id]);
+
+  const persist = async (next: Logro[]) => {
+    setItems(next);
+    if (!account?.id) {
+      setMsg({ kind: "err", text: "Inicia sesión para guardar tus logros." });
+      return;
+    }
+    try {
+      const { error } = await createClient().from("profiles").upsert({ id: account.id, achievements: next });
+      if (error) throw error;
+      setMsg({ kind: "ok", text: "Guardado." });
+      setTimeout(() => setMsg(null), 1500);
+    } catch (e) {
+      setMsg({ kind: "err", text: e instanceof Error ? e.message : "No se pudo guardar." });
+    }
+  };
+
+  const addLogro = () => {
+    if (!form.title.trim() && !form.detail.trim()) {
+      setMsg({ kind: "err", text: "Agrega al menos un título." });
+      return;
+    }
+    persist([
+      { title: form.title.trim(), impact: form.impact.trim(), year: form.year.trim(), detail: form.detail.trim() },
+      ...items,
+    ]);
+    setForm({ title: "", impact: "", year: "", detail: "" });
+  };
+  const removeLogro = (i: number) => persist(items.filter((_, idx) => idx !== i));
+
+  const set = (k: keyof Logro, v: string) => setForm((f) => ({ ...f, [k]: v }));
+
+  return (
+    <>
+      <PanelHead title="Logros" hint="Tus hitos clave: proyectos, reestructuraciones, lanzamientos, resultados que marcaron tu carrera. La sala los usa para armar tu narrativa." />
+
+      <div className="lg-form">
+        <div className="lg-form-row">
+          <div style={{ flex: 2 }}>
+            <label className="fld" htmlFor="lg-title">Título del logro</label>
+            <input className="txt" id="lg-title" value={form.title} placeholder="Ej. Reestructuré la operación de LatAm" onChange={(e) => set("title", e.target.value)} />
+          </div>
+          <div style={{ width: 110 }}>
+            <label className="fld" htmlFor="lg-year">Año</label>
+            <input className="txt" id="lg-year" value={form.year} placeholder="2023" onChange={(e) => set("year", e.target.value)} />
+          </div>
+        </div>
+        <div style={{ marginTop: 14 }}>
+          <label className="fld" htmlFor="lg-impact">Impacto / métrica</label>
+          <input className="txt" id="lg-impact" value={form.impact} placeholder="Ej. +32% de eficiencia, ahorro de $1.2M" onChange={(e) => set("impact", e.target.value)} />
+        </div>
+        <div style={{ marginTop: 14 }}>
+          <label className="fld" htmlFor="lg-detail">Descripción</label>
+          <textarea className="txt" id="lg-detail" rows={3} value={form.detail} placeholder="Qué hiciste, cómo, y por qué importó." onChange={(e) => set("detail", e.target.value)} />
+        </div>
+        <div className="pf-actions">
+          {msg && <span className={`pf-msg ${msg.kind}`}>{msg.text}</span>}
+          <button className="btn" type="button" onClick={addLogro}>Agregar logro</button>
+        </div>
+      </div>
+
+      <div className="kicker-rule" />
+
+      {items.length === 0 ? (
+        <p className="pf-empty">Todavía no has agregado logros.</p>
+      ) : (
+        <div className="lg-list">
+          {items.map((l, i) => (
+            <div className="lg-item" key={i}>
+              <div className="lg-item-head">
+                <span className="lg-item-title">{l.title || "(sin título)"}</span>
+                {l.year && <span className="lg-item-year">{l.year}</span>}
+                <button className="pf-linkbtn danger" onClick={() => removeLogro(i)}>Eliminar</button>
+              </div>
+              {l.impact && <p className="lg-item-impact">{l.impact}</p>}
+              {l.detail && <p className="lg-item-detail">{l.detail}</p>}
+            </div>
+          ))}
+        </div>
+      )}
     </>
   );
 }

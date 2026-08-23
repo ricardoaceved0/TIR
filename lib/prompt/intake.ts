@@ -13,6 +13,10 @@ export type Intake = {
   tools: string[];
   /** Candidate CV as Markdown (from /profile → Mis CVs). May be "". */
   cvText: string;
+  /** Extra skills/certs not on the CV (/profile → Conocimientos). */
+  conocimientos: string[];
+  /** Career milestones (/profile → Logros). */
+  logros: { title: string; impact: string; year: string; detail: string }[];
   /** Language the AI should answer in. Defaults to Spanish. */
   preferredLanguage?: string;
 };
@@ -39,6 +43,18 @@ export function normalizeIntake(input: unknown): Intake {
       ? o.tools.split(",").map((t) => t.trim()).filter(Boolean)
       : [],
     cvText: str(o.cvText, o.cv_text),
+    conocimientos: Array.isArray(o.conocimientos)
+      ? o.conocimientos.filter((t): t is string => typeof t === "string")
+      : [],
+    logros: Array.isArray(o.logros)
+      ? o.logros
+          .map((l) => {
+            const one = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+            const o2 = (l ?? {}) as Record<string, unknown>;
+            return { title: one(o2.title), impact: one(o2.impact), year: one(o2.year), detail: one(o2.detail) };
+          })
+          .filter((l) => l.title || l.detail)
+      : [],
     preferredLanguage: str(o.preferredLanguage) || "español",
   };
 }
@@ -50,6 +66,17 @@ export function intakeToText(intake: Intake): string {
     intake.cvText || "(no proporcionado)",
     "",
     `Herramientas / metodologías del candidato: ${intake.tools.length ? intake.tools.join(", ") : "(ninguna)"}`,
+    `Conocimientos adicionales (no en el CV): ${intake.conocimientos.length ? intake.conocimientos.join(", ") : "(ninguno)"}`,
+    "",
+    "LOGROS PRINCIPALES:",
+    intake.logros.length
+      ? intake.logros
+          .map(
+            (l, i) =>
+              `${i + 1}. ${l.title}${l.year ? ` (${l.year})` : ""}${l.impact ? ` — impacto: ${l.impact}` : ""}${l.detail ? `: ${l.detail}` : ""}`
+          )
+          .join("\n")
+      : "(ninguno)",
     "",
     "JOB DETAILS:",
     `- Empresa: ${intake.empresa || "(no especificada)"}`,
