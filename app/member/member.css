@@ -1156,6 +1156,12 @@
   50% { opacity: 0.28; }
 }
 
+/* 404 */
+.tir .nf-wrap { max-width: 640px; margin: 72px auto; text-align: center; }
+.tir .nf-wrap .lede { margin-left: auto; margin-right: auto; }
+.tir .nf-wrap .row-actions { justify-content: center; }
+.tir .nf-wrap .btn { text-decoration: none; }
+
 /* Diagnóstico · question set (from the model) */
 .tir .qset { margin-top: 10px; }
 .tir .qitem { padding: 14px 0; border-top: 1px solid #d8d8e0; }
