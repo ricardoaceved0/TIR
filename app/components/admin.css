@@ -3,7 +3,8 @@
    .pf-* left-sidebar layout). Scoped under `.tir`.
    ============================================================ */
 
-.tir .pf-nav a.pf-navitem { text-decoration: none; }
+.tir .pf-nav a.pf-navitem,
+.tir .pf-navmenu a.pf-navitem { text-decoration: none; }
 
 /* bare content column (no panel card) — e.g. /studio provides its own cards */
 .tir .adm-bare { min-width: 0; }

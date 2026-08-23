@@ -45,6 +45,7 @@ export default function AdminShell({
   children: React.ReactNode;
 }) {
   const [role, setRole] = useState<Role | null | undefined>(undefined); // undefined = checking
+  const [navOpen, setNavOpen] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -101,6 +102,42 @@ export default function AdminShell({
           </div>
         ) : (
           <div className="pf-layout">
+            {/* mobile: custom dropdown (the rail is hidden ≤760px) */}
+            <div className="pf-navmobile">
+              <button
+                className="pf-navsel"
+                aria-expanded={navOpen}
+                onClick={() => setNavOpen((o) => !o)}
+              >
+                <span className="pf-navico" aria-hidden="true"><GhostMark /></span>
+                <span className="pf-navsel-label">
+                  {ITEMS.find((it) => it.key === active)?.label ?? "Secciones"}
+                </span>
+                <span className="pf-navsel-chev" aria-hidden="true">{navOpen ? "▴" : "▾"}</span>
+              </button>
+              {navOpen && (
+                <>
+                  <div className="pf-navbackdrop" onClick={() => setNavOpen(false)} aria-hidden="true" />
+                  <div className="pf-navmenu" role="menu">
+                    {ITEMS.map((it) => (
+                      <a
+                        key={it.key}
+                        className={`pf-navitem${active === it.key ? " on" : ""}`}
+                        href={it.href}
+                        aria-current={active === it.key ? "page" : undefined}
+                      >
+                        <span className="pf-navico" aria-hidden="true"><GhostMark /></span>
+                        <span className="pf-navtext">
+                          <span className="pf-navlabel">{it.label}</span>
+                          <span className="pf-navsub">{it.sub}</span>
+                        </span>
+                      </a>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+
             <nav className="pf-nav" aria-label="Secciones del backend">
               {ITEMS.map((it) => (
                 <a
