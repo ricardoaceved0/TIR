@@ -9,13 +9,15 @@ import { Account, fetchAccount, initialsFrom } from "@/lib/auth/roles";
 
 /* ─────────────────────────── sections ─────────────────────────── */
 
-type SectionId = "main" | "cvs" | "prefs" | "sub";
+type SectionId = "main" | "cvs" | "history" | "prefs" | "sub" | "privacy";
 
 const SECTIONS: { id: SectionId; hash: string; label: string; sub: string }[] = [
   { id: "main", hash: "cuenta", label: "Cuenta", sub: "Nombre, foto, correo y contraseña" },
   { id: "cvs", hash: "mis-cvs", label: "Mis CVs", sub: "Sube tu CV y conviértelo a Markdown" },
+  { id: "history", hash: "historial", label: "Historial", sub: "Tus análisis anteriores" },
   { id: "prefs", hash: "preferencias", label: "Preferencias", sub: "Texto, idioma y accesibilidad" },
   { id: "sub", hash: "subscripcion", label: "Subscripción", sub: "Plan, créditos y facturación" },
+  { id: "privacy", hash: "datos-y-privacidad", label: "Datos y privacidad", sub: "Exporta o elimina tu cuenta" },
 ];
 
 function sectionFromHash(): SectionId {
@@ -60,11 +62,27 @@ function IconCard() {
     </svg>
   );
 }
+function IconClock() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+    </svg>
+  );
+}
+function IconShield() {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" />
+    </svg>
+  );
+}
 const ICONS: Record<SectionId, () => React.JSX.Element> = {
   main: IconAccount,
   cvs: IconDoc,
+  history: IconClock,
   prefs: IconSliders,
   sub: IconCard,
+  privacy: IconShield,
 };
 
 /* ─────────────────────────── preferences ─────────────────────────── */
@@ -180,8 +198,10 @@ export default function ProfileClient() {
           <div className="pf-panel">
             {section === "main" && <MainPanel account={account} />}
             {section === "cvs" && <CvsPanel account={account} />}
+            {section === "history" && <HistoryPanel account={account} />}
             {section === "prefs" && <PrefsPanel />}
             {section === "sub" && <SubPanel />}
+            {section === "privacy" && <PrivacyPanel account={account} />}
           </div>
         </div>
 
@@ -689,6 +709,206 @@ function SubPanel() {
             <span className="pf-bill-amt">{h.amount}</span>
           </div>
         ))}
+      </div>
+    </>
+  );
+}
+
+/* ─────────────────────────── Historial ─────────────────────────── */
+
+type RunRow = {
+  id: string;
+  empresa: string | null;
+  posicion: string | null;
+  stage: string | null;
+  model: string | null;
+  created_at: string;
+  diagnostic: {
+    box_1?: { technical_match?: number; abilities_match?: number; titles_degrees_match?: number };
+    gap?: { identified_gap?: string; mitigation_strategy?: string };
+    adjetivo?: { weak_claim?: string; evidenced_upgrade?: string };
+    resultado?: { task_focused_statement?: string; metric_driven_upgrade?: string };
+    question_set?: { id: number; question: string; questions_why: string }[];
+  } | null;
+};
+
+function HistoryPanel({ account }: { account: Account | null }) {
+  const [runs, setRuns] = useState<RunRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [err, setErr] = useState("");
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!account?.id) {
+      setLoading(false);
+      return;
+    }
+    let alive = true;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("runs")
+          .select("id, empresa, posicion, stage, model, created_at, diagnostic")
+          .eq("user_id", account.id)
+          .order("created_at", { ascending: false });
+        if (error) throw error;
+        if (alive) setRuns((data ?? []) as RunRow[]);
+      } catch (e) {
+        if (alive) setErr(e instanceof Error ? e.message : "No se pudo cargar el historial.");
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [account?.id]);
+
+  const fmt = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleString("es", { dateStyle: "medium", timeStyle: "short" });
+    } catch {
+      return iso;
+    }
+  };
+
+  return (
+    <>
+      <PanelHead title="Historial" hint="Cada análisis que has generado con la sala — sus datos de entrada y su resultado. Exporta todo en CSV o Excel." />
+
+      <div className="pf-export-row">
+        <a className="btn ghost sm" href="/api/account/export?scope=runs&format=csv">Exportar CSV</a>
+        <a className="btn ghost sm" href="/api/account/export?scope=runs&format=xlsx">Exportar Excel</a>
+      </div>
+
+      {loading && <p className="pf-empty">Cargando…</p>}
+      {!loading && !account?.id && <p className="pf-empty">Inicia sesión para ver tu historial.</p>}
+      {!loading && err && <p className="pf-msg err">{err}</p>}
+      {!loading && account?.id && !err && runs.length === 0 && (
+        <p className="pf-empty">Todavía no has generado ningún análisis.</p>
+      )}
+
+      <div className="pf-runlist">
+        {runs.map((r) => {
+          const b = r.diagnostic?.box_1;
+          return (
+            <div className="pf-run" key={r.id}>
+              <button className="pf-run-head" onClick={() => setOpenId((id) => (id === r.id ? null : r.id))}>
+                <span className="pf-run-date">{fmt(r.created_at)}</span>
+                <span className="pf-run-title">
+                  {r.posicion || "—"}{r.empresa ? ` · ${r.empresa}` : ""}
+                </span>
+                {r.stage && <span className="pf-run-stage">{r.stage}</span>}
+                <span className="pf-run-chev">{openId === r.id ? "▴" : "▾"}</span>
+              </button>
+              {openId === r.id && r.diagnostic && (
+                <div className="pf-run-body">
+                  {b && (
+                    <p className="pf-run-scores">
+                      Technical <b>{b.technical_match ?? "—"}%</b> · Abilities <b>{b.abilities_match ?? "—"}%</b> · Títulos <b>{b.titles_degrees_match ?? "—"}%</b>
+                    </p>
+                  )}
+                  {r.diagnostic.gap?.identified_gap && (
+                    <p className="pf-run-line"><b>Gap:</b> {r.diagnostic.gap.identified_gap}</p>
+                  )}
+                  {r.diagnostic.adjetivo?.weak_claim && (
+                    <p className="pf-run-line"><b>Adjetivo:</b> {r.diagnostic.adjetivo.weak_claim}</p>
+                  )}
+                  {r.diagnostic.resultado?.task_focused_statement && (
+                    <p className="pf-run-line"><b>Resultado:</b> {r.diagnostic.resultado.task_focused_statement}</p>
+                  )}
+                  {!!r.diagnostic.question_set?.length && (
+                    <p className="pf-run-line"><b>Preguntas:</b> {r.diagnostic.question_set.length}</p>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
+/* ─────────────────────────── Datos y privacidad ─────────────────────────── */
+
+function PrivacyPanel({ account }: { account: Account | null }) {
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
+
+  const lock = async () => {
+    setMsg(null);
+    if (confirm.trim().toUpperCase() !== "ELIMINAR") {
+      setMsg({ kind: "err", text: 'Escribe ELIMINAR para confirmar.' });
+      return;
+    }
+    if (!account?.id) {
+      setMsg({ kind: "err", text: "Inicia sesión para continuar." });
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch("/api/account/lock", { method: "POST" });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      try {
+        await createClient().auth.signOut();
+      } catch {
+        /* ignore */
+      }
+      window.location.href = "/login";
+    } catch (e) {
+      setMsg({ kind: "err", text: e instanceof Error ? e.message : "No se pudo eliminar la cuenta." });
+      setBusy(false);
+    }
+  };
+
+  return (
+    <>
+      <PanelHead title="Datos y privacidad" hint="Descarga todo lo que la sala guarda sobre ti, o solicita la eliminación de tu cuenta." />
+
+      <div className="pf-block">
+        <div className="pf-block-title">Exportar mi cuenta</div>
+        <p className="pf-help" style={{ marginTop: 0 }}>
+          Descarga tu perfil, tus CVs, tu suscripción y todo tu historial de análisis.
+        </p>
+        <div className="pf-export-row" style={{ marginTop: 12 }}>
+          <a className="btn ghost sm" href="/api/account/export?scope=account&format=csv">Descargar CSV</a>
+          <a className="btn ghost sm" href="/api/account/export?scope=account&format=xlsx">Descargar Excel</a>
+        </div>
+      </div>
+
+      <div className="pf-danger">
+        <div className="pf-block-title danger">Eliminar cuenta</div>
+        <p className="pf-danger-warn">
+          <b>Esta acción es permanente.</b> Tu cuenta quedará <b>bloqueada</b>: no podrás iniciar
+          sesión ni recuperar tu contraseña. Tus datos no se borran de inmediato — quedan marcados
+          para que un administrador los elimine de la base de datos.
+        </p>
+        <label className="fld" htmlFor="pf-confirm" style={{ marginTop: 6 }}>
+          Escribe <b>ELIMINAR</b> para confirmar
+        </label>
+        <input
+          className="txt"
+          id="pf-confirm"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          placeholder="ELIMINAR"
+          autoComplete="off"
+        />
+        <div className="pf-actions" style={{ justifyContent: "space-between" }}>
+          {msg && <span className={`pf-msg ${msg.kind}`}>{msg.text}</span>}
+          <button
+            className="btn danger"
+            type="button"
+            onClick={lock}
+            disabled={busy || confirm.trim().toUpperCase() !== "ELIMINAR"}
+          >
+            {busy ? "Procesando…" : "Eliminar mi cuenta"}
+          </button>
+        </div>
       </div>
     </>
   );
