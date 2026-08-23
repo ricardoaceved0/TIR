@@ -4,7 +4,15 @@ import { useCallback, useEffect, useState } from "react";
 import { AdminPanelHead } from "@/app/components/AdminShell";
 import { ROLE_LABELS, Role } from "@/lib/auth/roles";
 
-type UserRow = { id: string; email: string | undefined; role: Role; full_name: string; created_at?: string };
+type UserRow = {
+  id: string;
+  email: string | undefined;
+  role: Role;
+  full_name: string;
+  locked?: boolean;
+  deletion_requested_at?: string | null;
+  created_at?: string;
+};
 
 export default function AdminUsersClient() {
   const [name, setName] = useState("");
@@ -17,6 +25,7 @@ export default function AdminUsersClient() {
   const [users, setUsers] = useState<UserRow[]>([]);
   const [listErr, setListErr] = useState("");
   const [loadingList, setLoadingList] = useState(true);
+  const [rowBusy, setRowBusy] = useState<string | null>(null);
 
   const loadUsers = useCallback(async () => {
     setLoadingList(true);
@@ -36,6 +45,55 @@ export default function AdminUsersClient() {
   useEffect(() => {
     loadUsers();
   }, [loadUsers]);
+
+  const unlock = async (u: UserRow) => {
+    setRowBusy(u.id);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: u.id }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      loadUsers();
+    } catch (e) {
+      setListErr(e instanceof Error ? e.message : "No se pudo desbloquear.");
+    } finally {
+      setRowBusy(null);
+    }
+  };
+
+  const purge = async (u: UserRow) => {
+    if (!window.confirm(`Eliminar DEFINITIVAMENTE la cuenta de ${u.email} y todos sus datos? Esta acción no se puede deshacer.`)) {
+      return;
+    }
+    setRowBusy(u.id);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: u.id }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      loadUsers();
+    } catch (e) {
+      setListErr(e instanceof Error ? e.message : "No se pudo eliminar.");
+    } finally {
+      setRowBusy(null);
+    }
+  };
+
+  const locked = users.filter((u) => u.locked);
+  const fmtDate = (iso?: string | null) => {
+    if (!iso) return "";
+    try {
+      return new Date(iso).toLocaleDateString("es", { dateStyle: "medium" });
+    } catch {
+      return iso;
+    }
+  };
 
   const create = async () => {
     setMsg(null);
@@ -124,7 +182,46 @@ export default function AdminUsersClient() {
               <div className="adm-user-email">{u.email}</div>
               {u.full_name && <div className="adm-user-name">{u.full_name}</div>}
             </div>
-            <span className={`adm-rolebadge ${u.role}`}>{ROLE_LABELS[u.role]}</span>
+            <div className="adm-row-badges">
+              {u.locked && <span className="adm-rolebadge locked">Bloqueado</span>}
+              <span className={`adm-rolebadge ${u.role}`}>{ROLE_LABELS[u.role]}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="kicker-rule" />
+
+      <div className="adm-userlist">
+        <div className="adm-userlist-title">
+          <div className="eyebrow" style={{ margin: 0 }}>Solicitudes de eliminación</div>
+          <button className="pf-linkbtn" onClick={loadUsers}>Refrescar</button>
+        </div>
+        <p className="adm-empty" style={{ marginTop: -4, marginBottom: 10 }}>
+          Cuentas bloqueadas por el usuario. Desbloquéalas o elimínalas de la base de datos.
+        </p>
+
+        {loadingList && <p className="adm-empty">Cargando…</p>}
+        {!loadingList && !listErr && locked.length === 0 && (
+          <p className="adm-empty">No hay solicitudes de eliminación.</p>
+        )}
+
+        {locked.map((u) => (
+          <div className="adm-userrow" key={u.id}>
+            <div>
+              <div className="adm-user-email">{u.email}</div>
+              <div className="adm-user-name">
+                {u.full_name ? `${u.full_name} · ` : ""}Solicitado {fmtDate(u.deletion_requested_at)}
+              </div>
+            </div>
+            <div className="adm-row-actions">
+              <button className="pf-linkbtn" disabled={rowBusy === u.id} onClick={() => unlock(u)}>
+                Desbloquear
+              </button>
+              <button className="pf-linkbtn danger" disabled={rowBusy === u.id} onClick={() => purge(u)}>
+                Eliminar definitivamente
+              </button>
+            </div>
           </div>
         ))}
       </div>

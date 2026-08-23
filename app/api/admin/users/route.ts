@@ -33,18 +33,74 @@ export async function GET() {
   const { data: list, error } = await admin.auth.admin.listUsers();
   if (error) return Response.json({ ok: false, error: error.message }, { status: 500 });
 
-  const { data: profiles } = await admin.from("profiles").select("id, role, full_name");
+  const { data: profiles } = await admin
+    .from("profiles")
+    .select("id, role, full_name, locked, deletion_requested_at");
   const byId = new Map((profiles ?? []).map((p) => [p.id, p]));
 
-  const users = list.users.map((u) => ({
-    id: u.id,
-    email: u.email,
-    role: (isRole(byId.get(u.id)?.role) ? byId.get(u.id)?.role : "regular") as Role,
-    full_name: byId.get(u.id)?.full_name ?? "",
-    created_at: u.created_at,
-  }));
+  const users = list.users.map((u) => {
+    const p = byId.get(u.id);
+    return {
+      id: u.id,
+      email: u.email,
+      role: (isRole(p?.role) ? p?.role : "regular") as Role,
+      full_name: p?.full_name ?? "",
+      locked: Boolean(p?.locked),
+      deletion_requested_at: p?.deletion_requested_at ?? null,
+      created_at: u.created_at,
+    };
+  });
 
   return Response.json({ ok: true, users });
+}
+
+/** Unlock a locked/deletion-requested account (admin+). */
+export async function PATCH(req: Request) {
+  const gate = await requireAdmin();
+  if ("error" in gate) return Response.json({ ok: false, error: gate.error }, { status: gate.status });
+
+  const body = await req.json().catch(() => null);
+  const id = String(body?.id ?? "");
+  if (!id) return Response.json({ ok: false, error: "Falta el id." }, { status: 400 });
+
+  const admin = createServiceClient();
+  if (!admin) {
+    return Response.json(
+      { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY no está configurada en el servidor." },
+      { status: 500 }
+    );
+  }
+
+  const { error } = await admin.auth.admin.updateUserById(id, { ban_duration: "none" });
+  if (error) return Response.json({ ok: false, error: error.message }, { status: 500 });
+  await admin.from("profiles").update({ locked: false, deletion_requested_at: null }).eq("id", id);
+  return Response.json({ ok: true });
+}
+
+/** Permanently delete an account and its data (super_admin only). */
+export async function DELETE(req: Request) {
+  const gate = await requireAdmin();
+  if ("error" in gate) return Response.json({ ok: false, error: gate.error }, { status: gate.status });
+  if (gate.role !== "super_admin") {
+    return Response.json({ ok: false, error: "Solo un Super Admin puede eliminar cuentas." }, { status: 403 });
+  }
+
+  const body = await req.json().catch(() => null);
+  const id = String(body?.id ?? "");
+  if (!id) return Response.json({ ok: false, error: "Falta el id." }, { status: 400 });
+
+  const admin = createServiceClient();
+  if (!admin) {
+    return Response.json(
+      { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY no está configurada en el servidor." },
+      { status: 500 }
+    );
+  }
+
+  // Removing the auth user cascades to profiles/cvs/runs (FK on delete cascade).
+  const { error } = await admin.auth.admin.deleteUser(id);
+  if (error) return Response.json({ ok: false, error: error.message }, { status: 500 });
+  return Response.json({ ok: true });
 }
 
 export async function POST(req: Request) {

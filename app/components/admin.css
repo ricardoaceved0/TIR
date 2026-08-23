@@ -101,6 +101,9 @@
   border-radius: 999px;
   white-space: nowrap;
 }
+.tir .adm-row-badges { display: inline-flex; align-items: center; gap: 8px; }
+.tir .adm-row-actions { display: inline-flex; align-items: center; gap: 14px; }
+.tir .adm-rolebadge.locked { color: #7a2e2e; background: #f4dede; border: 1px solid #e6c2c2; }
 .tir .adm-rolebadge.regular { color: var(--ink); background: var(--wash-deep); }
 .tir .adm-rolebadge.admin { color: #26262c; background: var(--mark-soft); border: 1px solid var(--mark); }
 .tir .adm-rolebadge.super_admin { color: var(--ink); background: var(--mark); }
