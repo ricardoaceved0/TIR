@@ -866,6 +866,7 @@
   font-weight: 600;
   color: var(--mark);
   white-space: nowrap;
+  text-decoration: none;
   border-bottom: 1px solid transparent;
   transition: 0.15s;
 }
@@ -1180,6 +1181,9 @@
 
 .tir .row-actions { margin-top: 26px; display: flex; gap: 12px; flex-wrap: wrap; }
 .tir .row-actions.end { justify-content: flex-end; }
+.tir .entrada-send { align-items: center; gap: 16px; }
+.tir .cv-nudge { font-size: 12.5px; color: var(--muted); margin: 0; }
+.tir .cv-nudge a { color: var(--ink); font-weight: 600; }
 .tir .foot {
   border-top: 1px solid #c6c6d2;
   margin-top: 40px;

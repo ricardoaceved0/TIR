@@ -7,11 +7,15 @@ The `/profile` page (Layout: left sidebar) ships with four sections:
 | **Cuenta** — name, avatar, email, password | UI complete; save calls `supabase.auth.updateUser` + `profiles` upsert, guarded on a session | Enable auth + run the migration |
 | **Mis CVs** — upload → Markdown, persisted, pick the active one | Converts via `POST /api/cv/convert`; saves each CV to the `cvs` table; "Usar/En uso" marks one active (`cvs.is_active`). The active CV's Markdown is sent as `cv_text` to `/api/analyze` for the diagnostic. | Run `0003_cv_active.sql`; needs auth |
 | **Preferencias** — text size, language, reduce motion | **Functional now**, stored in `localStorage` | Mirror to `profiles.preferences` on save |
+| **Conocimientos** — skills/certs not on the CV (chips) | Saved to `profiles.knowledge` (jsonb); fed into the diagnostic. | Run `0006_profile_lists.sql` |
+| **Logros** — career milestones (title, impact, year, detail) | Saved to `profiles.achievements` (jsonb); fed into the diagnostic. | Run `0006_profile_lists.sql` |
 | **Historial** — your past diagnostic runs + export | Reads the `runs` table (each `/api/analyze` call is saved). Export CSV/Excel via `/api/account/export?scope=runs`. | Run `0004_runs.sql` |
 | **Subscripción** — plan, credits, billing | UI complete with demo data | Read from `subscriptions`; write via Stripe webhook |
 | **Datos y privacidad** — export account, delete/lock | Export everything (profile, CVs, subscription, history) as CSV/Excel via `/api/account/export?scope=account`. "Eliminar cuenta" → `/api/account/lock` **bans** the user (can't sign in / reset) and flags `profiles.locked` + `deletion_requested_at`; no data is deleted — an admin purges it. | Run `0004`+`0005`; needs `SUPABASE_SERVICE_ROLE_KEY` for the lock |
 
 The header **profile circle → `/profile`** and the **gear → `/profile#preferencias`**.
+
+**Onboarding tracker:** Screen 01's "Lo que la sala ya sabe de ti" box reflects real completion — Hoja de Vida (a CV exists), Conocimientos, and Logros — with "Completar →" deep-links into the matching `/profile` section. The three feed the diagnostic; if no CV, Entrada shows a soft nudge (no hard block).
 
 ---
 

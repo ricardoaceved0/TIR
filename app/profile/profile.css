@@ -378,6 +378,31 @@
 .tir .pf-bill-date { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--muted); }
 .tir .pf-bill-amt { font-family: "IBM Plex Mono", monospace; font-weight: 600; }
 
+/* ---------- Logros ---------- */
+.tir .lg-form-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.tir .lg-form-row > div { min-width: 0; }
+.tir .lg-list { display: flex; flex-direction: column; gap: 12px; }
+.tir .lg-item {
+  border: 1px solid var(--wash-deep);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.tir .lg-item-head { display: flex; align-items: center; gap: 10px; }
+.tir .lg-item-title { font-size: 14px; font-weight: 600; flex: 1; min-width: 0; }
+.tir .lg-item-year {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.tir .lg-item-impact {
+  margin-top: 6px;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  color: var(--ok);
+}
+.tir .lg-item-detail { margin-top: 6px; font-size: 13px; color: #3d3d45; line-height: 1.55; }
+
 /* ---------- Historial ---------- */
 .tir .pf-export-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
 .tir .pf-export-row .btn { text-decoration: none; }
