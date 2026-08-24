@@ -6,6 +6,18 @@
   --err: #ff6b6b;
   --card: #141414;
   --border: #262626;
+
+  /* app canvas behind the .tir surface — matches the member-area page bg so
+     there is no flash or overscroll gap. Theme-aware (see below). */
+  --app-bg: #e9e9f0;
+}
+html[data-theme="dark"] {
+  --app-bg: #131211;
+}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) {
+    --app-bg: #131211;
+  }
 }
 
 * {
@@ -22,7 +34,7 @@ body {
 
 body {
   color: var(--fg);
-  background: var(--bg);
+  background: var(--app-bg);
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     sans-serif;
   line-height: 1.6;

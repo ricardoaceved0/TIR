@@ -565,7 +565,7 @@ export default function MemberArea() {
               <div className="ai-panel">
                 <div className="eyebrow">Análisis de la sala</div>
                 <div className="ai-box done">
-                  <p className="ai-text" style={{ color: "#8a2f2f", fontFamily: "'Poppins',sans-serif", fontSize: 14 }}>
+                  <p className="ai-text" style={{ color: "var(--danger)", fontFamily: "'Poppins',sans-serif", fontSize: 14 }}>
                     No pude generar el análisis. {aiError}
                   </p>
                 </div>
@@ -754,7 +754,7 @@ export default function MemberArea() {
 
             <div className="card flat" style={{ background: "var(--wash)" }}>
               <div className="eyebrow">Tu estructura de 5 piezas</div>
-              <p style={{ fontSize: 13.5, color: "#3d3d45", lineHeight: 1.75 }}>
+              <p style={{ fontSize: 13.5, color: "var(--body)", lineHeight: 1.75 }}>
                 <b>1.</b> Dónde estás parada hoy
                 <br />
                 <b>2.</b> La evidencia que lo respalda
@@ -994,7 +994,7 @@ export default function MemberArea() {
               </div>
               <div className="card flat" style={{ background: "var(--wash)" }}>
                 <div className="eyebrow">Tu acceso</div>
-                <p style={{ fontSize: 13.5, color: "#3d3d45" }}>
+                <p style={{ fontSize: 13.5, color: "var(--body)" }}>
                   Renueva el 14 de septiembre. Puedes pausar cuando consigas el puesto y reactivar cuando lo necesites. Tu Story Bank se queda guardado, completo, sin importar cuánto tiempo pase.
                 </p>
                 <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -1017,7 +1017,7 @@ export default function MemberArea() {
             <div className="story">
               <span className="tag">Historia 02 · Retención</span>
               <p className="st">Bajé el churn de 60 días en 22 puntos</p>
-              <p className="mt">Usada en <b>0</b> respuestas · <span style={{ color: "#8a6d18" }}>la que Lumen necesita oír</span></p>
+              <p className="mt">Usada en <b>0</b> respuestas · <span className="mt-accent">la que Lumen necesita oír</span></p>
             </div>
             <div className="story">
               <span className="tag">Historia 03 · Conflicto</span>

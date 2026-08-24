@@ -24,7 +24,7 @@
   flex-wrap: wrap;
   max-width: 280px;
   padding: 10px 14px;
-  border: 1px solid #c6c6d2;
+  border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--paper);
   font-family: "IBM Plex Mono", monospace;
@@ -68,7 +68,7 @@
   margin: 0;
   font-size: 13px;
   line-height: 1.55;
-  color: #3d3d45;
+  color: var(--body);
   max-width: 64ch;
 }
 
@@ -85,7 +85,7 @@
   border: 1px dashed var(--wash-deep);
   border-radius: var(--r);
   padding: 16px 18px;
-  color: #3d3d45;
+  color: var(--body);
   font-size: 13.5px;
 }
 .tir .st-comingsoon p { margin: 0 0 8px; }
@@ -107,7 +107,7 @@
   align-items: center;
   gap: 11px;
   padding: 13px 15px;
-  border: 1.5px solid #c6c6d2;
+  border: 1.5px solid var(--line);
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;

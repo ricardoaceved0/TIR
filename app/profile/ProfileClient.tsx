@@ -115,8 +115,9 @@ const ICONS: Record<SectionId, () => React.JSX.Element> = {
 
 /* ─────────────────────────── preferences ─────────────────────────── */
 
-type Prefs = { textSize: "sm" | "md" | "lg"; language: "es" | "en"; reduceMotion: boolean };
-const DEFAULT_PREFS: Prefs = { textSize: "md", language: "es", reduceMotion: false };
+type Theme = "light" | "dark" | "system";
+type Prefs = { textSize: "sm" | "md" | "lg"; language: "es" | "en"; reduceMotion: boolean; theme: Theme };
+const DEFAULT_PREFS: Prefs = { textSize: "md", language: "es", reduceMotion: false, theme: "system" };
 const PREFS_KEY = "tir:prefs";
 
 function loadPrefs(): Prefs {
@@ -126,6 +127,23 @@ function loadPrefs(): Prefs {
   } catch {
     return DEFAULT_PREFS;
   }
+}
+
+/** Resolve a theme preference to the concrete value to paint ("system" → OS). */
+function resolveTheme(theme: Theme): "light" | "dark" {
+  if (theme === "system") {
+    return typeof window !== "undefined" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
+  }
+  return theme;
+}
+
+/** Stamp the resolved theme on <html> so the CSS token block flips. */
+function applyTheme(theme: Theme) {
+  if (typeof document === "undefined") return;
+  document.documentElement.setAttribute("data-theme", resolveTheme(theme));
 }
 
 /* ─────────────────────────── component ─────────────────────────── */
@@ -669,8 +687,18 @@ function PrefsPanel() {
     const root = document.querySelector(".pf") as HTMLElement | null;
     if (root) root.setAttribute("data-textsize", prefs.textSize);
     document.documentElement.classList.toggle("tir-reduce-motion", prefs.reduceMotion);
+    applyTheme(prefs.theme);
     localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
   }, [prefs]);
+
+  // when following the OS, repaint if the system scheme changes while open
+  useEffect(() => {
+    if (prefs.theme !== "system") return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => applyTheme("system");
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, [prefs.theme]);
 
   const set = <K extends keyof Prefs>(k: K, v: Prefs[K]) => setPrefs((p) => ({ ...p, [k]: v }));
 
@@ -725,6 +753,25 @@ function PrefsPanel() {
         Vista previa: este párrafo cambia de tamaño con la preferencia de arriba, para que veas
         cómo se leerá la sala.
       </p>
+
+      <div className="pf-pref" style={{ marginTop: 20 }}>
+        <div className="pf-pref-label">
+          <span className="pf-pref-title">Apariencia</span>
+          <span className="pf-pref-sub">Modo claro u oscuro. Sigue tu sistema hasta que elijas.</span>
+        </div>
+        <div className="pf-seg">
+          {(["light", "dark"] as const).map((v) => (
+            <button
+              key={v}
+              className="pf-segbtn"
+              aria-pressed={resolveTheme(prefs.theme) === v}
+              onClick={() => set("theme", v)}
+            >
+              {v === "light" ? "Claro" : "Oscuro"}
+            </button>
+          ))}
+        </div>
+      </div>
     </>
   );
 }

@@ -17,7 +17,7 @@
   background: var(--paper);
   font-size: 13px;
   line-height: 1.5;
-  color: #3d3d45;
+  color: var(--body);
 }
 
 /* ---------- layout: nav rail + panel ---------- */
@@ -69,7 +69,7 @@
   background: var(--wash);
   color: var(--ink);
 }
-.tir .pf-navitem.on .pf-navico { background: var(--mark); color: var(--ink); }
+.tir .pf-navitem.on .pf-navico { background: var(--mark); color: var(--on-mark); }
 .tir .pf-navtext { display: flex; flex-direction: column; min-width: 0; }
 .tir .pf-navlabel { font-size: 14px; font-weight: 600; }
 .tir .pf-navsub {
@@ -92,7 +92,7 @@
 .tir .pf-panelhint {
   margin-top: 8px;
   font-size: 13.5px;
-  color: #3d3d45;
+  color: var(--body);
   max-width: 58ch;
 }
 .tir .pf-help { font-size: 12px; color: var(--muted); margin-top: 7px; }
@@ -120,7 +120,7 @@
   flex: none;
   overflow: hidden;
   background: var(--mark);
-  color: var(--ink);
+  color: var(--on-mark);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -191,7 +191,7 @@
   flex: none;
   padding: 6px 12px;
   border-radius: 999px;
-  border: 1.5px solid #c6c6d2;
+  border: 1.5px solid var(--line);
   background: var(--paper);
   color: var(--muted);
   font-family: "IBM Plex Mono", monospace;
@@ -211,9 +211,9 @@
 .tir .pf-cv-use.on {
   border-color: var(--mark);
   background: var(--mark);
-  color: var(--ink);
+  color: var(--on-mark);
 }
-.tir .pf-cv-use.on .pf-cv-radio { border-color: var(--ink); background: var(--ink); }
+.tir .pf-cv-use.on .pf-cv-radio { border-color: var(--on-mark); background: var(--on-mark); }
 .tir .pf-linkbtn.danger { color: #b23b3b; }
 .tir .pf-linkbtn.danger:hover { border-bottom-color: #b23b3b; }
 .tir .pf-cv-ico { color: var(--muted); display: inline-flex; }
@@ -223,7 +223,7 @@
   font-size: 10px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: var(--on-mark);
   background: var(--mark);
   padding: 2px 8px;
   border-radius: 999px;
@@ -251,7 +251,7 @@
   font-family: "IBM Plex Mono", monospace;
   font-size: 12px;
   line-height: 1.6;
-  color: #26262c;
+  color: var(--reading);
   white-space: pre-wrap;
   word-break: break-word;
   max-height: 340px;
@@ -322,7 +322,7 @@
   padding-top: 18px;
   border-top: 1px solid var(--wash-deep);
   font-size: 14px;
-  color: #3d3d45;
+  color: var(--body);
 }
 
 /* ---------- Subscripción ---------- */
@@ -339,7 +339,7 @@
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: var(--on-mark);
   background: var(--mark);
   padding: 4px 10px;
   border-radius: 999px;
@@ -403,7 +403,7 @@
   font-size: 12px;
   color: var(--ok);
 }
-.tir .lg-item-detail { margin-top: 6px; font-size: 13px; color: #3d3d45; line-height: 1.55; }
+.tir .lg-item-detail { margin-top: 6px; font-size: 13px; color: var(--body); line-height: 1.55; }
 
 /* ---------- Historial ---------- */
 .tir .pf-export-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
@@ -450,7 +450,7 @@
   color: var(--ink-soft);
   margin: 12px 0;
 }
-.tir .pf-run-line { font-size: 13px; color: #3d3d45; margin-top: 7px; line-height: 1.5; }
+.tir .pf-run-line { font-size: 13px; color: var(--body); margin-top: 7px; line-height: 1.5; }
 
 /* ---------- Datos y privacidad ---------- */
 .tir .pf-block { margin-bottom: 8px; }
@@ -467,6 +467,18 @@
 .tir .btn.danger { background: #b23b3b; border-color: #b23b3b; color: #fff; }
 .tir .btn.danger:hover:not(:disabled) { background: #fff; color: #b23b3b; }
 .tir .btn.danger:disabled { opacity: 0.5; cursor: default; }
+
+/* dark-theme: danger reds tuned for a dark surface */
+[data-theme="dark"] .tir .pf-msg.err,
+[data-theme="dark"] .tir .pf-block-title.danger,
+[data-theme="dark"] .tir .pf-linkbtn.danger { color: #e58c78; }
+[data-theme="dark"] .tir .pf-linkbtn.danger:hover { border-bottom-color: #e58c78; }
+[data-theme="dark"] .tir .pf-danger {
+  border-color: rgba(178, 59, 59, 0.4);
+  background: rgba(178, 59, 59, 0.1);
+}
+[data-theme="dark"] .tir .pf-danger-warn { color: #e6a99f; }
+[data-theme="dark"] .tir .pf-cv-radio { border-color: var(--muted); }
 
 /* reduce-motion preference: kill animations app-wide */
 .tir-reduce-motion .tir *,
