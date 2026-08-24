@@ -34,7 +34,8 @@
   font-size: 15px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  padding-bottom: 80px;
+  /* the footer closes the page now; its margin-top provides the gap */
+  padding-bottom: 0;
   min-height: 100vh;
 }
 .tir *,
@@ -1195,15 +1196,161 @@
 .tir .entrada-send { align-items: center; gap: 16px; }
 .tir .cv-nudge { font-size: 12.5px; color: var(--muted); margin: 0; }
 .tir .cv-nudge a { color: var(--ink); font-weight: 600; }
-.tir .foot {
-  border-top: 1px solid var(--line);
-  margin-top: 40px;
-  padding: 26px 0;
-  font-size: 11.5px;
-  color: var(--muted);
-  text-align: center;
+/* ---------- footer (ink-dark, identical on every screen) ---------- */
+/* Stays dark in both themes via --surface-inverse / --on-inverse, matching
+   the header. On-ink tones (#3d3d45 hairlines, #c9c9d2 prose, #a8a8b4 muted)
+   are literal because they live on a permanently dark slab. */
+.tir .ft {
+  position: relative;
+  z-index: 1;
+  margin-top: 60px;
+  /* full-bleed out of the centered .shell it renders inside (body clips
+     overflow-x, so 100vw never introduces a horizontal scrollbar) */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  background: var(--surface-inverse);
+  color: var(--on-inverse);
+}
+.tir .ft-upper {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 54px 20px 38px;
+  display: grid;
+  grid-template-columns: minmax(240px, 1.1fr) minmax(280px, 1fr);
+  gap: 60px;
+  align-items: start;
+}
+
+/* column 1 — brand */
+.tir .ft-wordmark { font-size: 26px; color: var(--on-inverse); }
+/* the footer has room for the byline even on phones (the header hides its own) */
+.tir .ft-brand .byline { display: block; }
+.tir .ft-legal {
+  margin-top: 26px;
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 12px;
+  column-gap: 22px;
+}
+.tir .ft-legal-link {
+  font-family: "Poppins", sans-serif;
+  font-size: 13.5px;
+  color: #c9c9d2;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+.tir .ft-legal-link:hover { color: var(--on-inverse); border-bottom-color: var(--mark); }
+.tir .ft-legal-link:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
+
+.tir .ft-socials { margin-top: 34px; display: flex; align-items: center; gap: 18px; }
+.tir .ft-social {
+  display: inline-flex;
+  color: #a8a8b4;
+  transition: color 0.18s ease;
+  border-radius: 4px;
+}
+.tir .ft-social:hover { color: var(--on-inverse); }
+.tir .ft-social:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
+
+/* column 2 — newsletter */
+.tir .ft-news { max-width: 420px; }
+.tir .ft-news-head {
+  font-family: "Playfair Display", serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--on-inverse);
+  margin-bottom: 6px;
+}
+.tir .ft-news-blurb {
+  font-family: "Poppins", sans-serif;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: #c9c9d2;
+  margin-bottom: 18px;
+}
+.tir .ft-news-form { display: flex; gap: 12px; align-items: flex-end; }
+.tir .ft-news-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1.5px solid #3d3d45;
+  padding: 9px 2px;
+  font-family: "Poppins", sans-serif;
+  font-size: 14.5px;
+  color: var(--on-inverse);
+  outline: none;
+  transition: border-color 0.18s ease;
+}
+.tir .ft-news-input::placeholder { color: #a8a8b4; }
+.tir .ft-news-input:focus { border-bottom-color: var(--mark); }
+.tir .ft-news-btn {
+  flex: none;
+  appearance: none;
+  cursor: pointer;
+  padding: 10px 18px;
+  border-radius: 4px;
+  border: 1.5px solid var(--on-inverse);
+  background: var(--on-inverse);
+  color: var(--on-mark);
+  font-family: "Poppins", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.tir .ft-news-btn:hover { background: transparent; color: var(--on-inverse); }
+.tir .ft-news-btn:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
+.tir .ft-news-done {
+  font-family: "Poppins", sans-serif;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--mark);
+}
+
+/* lower bar */
+.tir .ft-lower {
+  border-top: 1px solid #3d3d45;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+.tir .ft-copy {
   font-family: "IBM Plex Mono", monospace;
-  letter-spacing: 0.04em;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: #a8a8b4;
+}
+.tir .ft-locale { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.tir .ft-lang {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 2px;
+  cursor: pointer;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #a8a8b4;
+  transition: color 0.18s ease;
+}
+.tir .ft-lang.on { color: var(--mark); font-weight: 600; }
+.tir .ft-lang:hover { color: var(--on-inverse); }
+.tir .ft-lang.on:hover { color: var(--mark); }
+.tir .ft-lang:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
+.tir .ft-locale-sep { color: #3d3d45; }
+
+@media (max-width: 860px) {
+  .tir .ft-upper { grid-template-columns: 1fr; gap: 38px; }
 }
 
 @media (max-width: 860px) {
