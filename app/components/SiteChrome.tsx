@@ -151,10 +151,206 @@ export function SiteHeader({
   );
 }
 
-export function SiteFooter() {
+/* ─────────────────────────── footer ─────────────────────────── */
+
+type Lang = "es" | "en";
+
+/** Four monochrome channel marks, glyph-only, on a 24×24 viewBox. */
+function SocialIcon({ name }: { name: "instagram" | "x" | "linkedin" | "substack" }) {
+  const common = {
+    viewBox: "0 0 24 24",
+    width: 19,
+    height: 19,
+    "aria-hidden": true as const,
+  };
+  if (name === "instagram") {
+    return (
+      <svg {...common} fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3.25" y="3.25" width="17.5" height="17.5" rx="5" />
+        <circle cx="12" cy="12" r="4.15" />
+        <circle cx="17.05" cy="6.95" r="0.9" fill="currentColor" stroke="none" />
+      </svg>
+    );
+  }
+  if (name === "x") {
+    return (
+      <svg {...common} fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 4 L20 20" />
+        <path d="M20 4 L4 20" />
+      </svg>
+    );
+  }
+  if (name === "linkedin") {
+    return (
+      <svg {...common} fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+        <rect x="3.25" y="3.25" width="17.5" height="17.5" rx="3" />
+        <path d="M7.6 10.4 V16.6" />
+        <circle cx="7.6" cy="7.5" r="0.95" fill="currentColor" stroke="none" />
+        <path d="M11.6 16.6 V10.4 M11.6 12.6 c0-1.4 1-2.2 2.3-2.2 1.4 0 2.5.8 2.5 2.6 V16.6" />
+      </svg>
+    );
+  }
   return (
-    <footer className="foot">
-      The Interview Room™ — spinoff de The Interview Edit™ con Mariana &amp; Graciela Atencio
+    <svg {...common} fill="currentColor" stroke="none">
+      <rect x="4" y="3.9" width="16" height="2.4" />
+      <rect x="4" y="8.6" width="16" height="2.4" />
+      <path d="M4 13.3 h16 V20.6 L12 16.3 4 20.6 Z" />
+    </svg>
+  );
+}
+
+const FT_COPY: Record<Lang, {
+  legal: string[];
+  nlHeading: string;
+  nlBlurb: string;
+  nlPlaceholder: string;
+  nlButton: string;
+  nlDone: string;
+  rights: string;
+}> = {
+  es: {
+    legal: ["Términos y condiciones", "Privacidad", "Cookies", "Contacto"],
+    nlHeading: "La carta de los domingos",
+    nlBlurb: "Una pregunta de entrevista, desarmada. Cada domingo, en tu correo.",
+    nlPlaceholder: "tu@correo.com",
+    nlButton: "Suscribirme",
+    nlDone: "¡Gracias! Revisa tu correo para confirmar.",
+    rights: "Todos los derechos reservados.",
+  },
+  en: {
+    legal: ["Terms & Conditions", "Privacy", "Cookies", "Contact"],
+    nlHeading: "The Sunday letter",
+    nlBlurb: "One interview question, taken apart. Every Sunday, in your inbox.",
+    nlPlaceholder: "you@email.com",
+    nlButton: "Subscribe",
+    nlDone: "Thanks! Check your inbox to confirm.",
+    rights: "All rights reserved.",
+  },
+};
+
+// Placeholder targets — see the footer handoff's "Open Items". Wire these to the
+// real legal routes, social handles, and Substack endpoint when they exist.
+const LEGAL_HREFS = ["#", "#", "#", "#"];
+const SOCIALS: { name: "instagram" | "x" | "linkedin" | "substack"; label: string; href: string }[] = [
+  { name: "instagram", label: "Instagram", href: "#" },
+  { name: "x", label: "X", href: "#" },
+  { name: "linkedin", label: "LinkedIn", href: "#" },
+  { name: "substack", label: "Substack", href: "#" },
+];
+
+/**
+ * The ink-dark footer used identically on every screen. Locale is shared with
+ * the rest of the app through the `tir:prefs` preference (the same key the
+ * Preferencias → Idioma toggle writes), so switching here switches everywhere.
+ */
+export function SiteFooter() {
+  const [lang, setLang] = useState<Lang>("es");
+  const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
+  const year = new Date().getFullYear();
+
+  // hydrate locale from the shared preference (falls back to es)
+  useEffect(() => {
+    try {
+      const p = JSON.parse(localStorage.getItem("tir:prefs") || "{}");
+      if (p.language === "en" || p.language === "es") setLang(p.language);
+    } catch {
+      /* no stored prefs */
+    }
+  }, []);
+
+  const setLangShared = (next: Lang) => {
+    setLang(next);
+    try {
+      const p = JSON.parse(localStorage.getItem("tir:prefs") || "{}");
+      localStorage.setItem("tir:prefs", JSON.stringify({ ...p, language: next }));
+    } catch {
+      /* storage unavailable */
+    }
+  };
+
+  const t = FT_COPY[lang];
+
+  const onSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    // TODO: POST to the real Substack endpoint (see handoff Open Items).
+    setSubscribed(true);
+  };
+
+  return (
+    <footer className="ft">
+      <div className="ft-upper">
+        {/* COLUMN 1 — brand */}
+        <div className="ft-brand">
+          <div className="wordmark ft-wordmark">
+            The Interview <em>Room</em>
+            <sup>™</sup>
+          </div>
+          <div className="byline">con Mariana &amp; Graciela Atencio</div>
+
+          <nav className="ft-legal" aria-label={lang === "es" ? "Enlaces legales" : "Legal links"}>
+            {t.legal.map((label, i) => (
+              <a key={label} className="ft-legal-link" href={LEGAL_HREFS[i]}>
+                {label}
+              </a>
+            ))}
+          </nav>
+
+          <div className="ft-socials">
+            {SOCIALS.map((s) => (
+              <a key={s.name} className="ft-social" href={s.href} aria-label={s.label} title={s.label}>
+                <SocialIcon name={s.name} />
+              </a>
+            ))}
+          </div>
+        </div>
+
+        {/* COLUMN 2 — newsletter */}
+        <div className="ft-news">
+          <h2 className="ft-news-head">{t.nlHeading}</h2>
+          <p className="ft-news-blurb">{t.nlBlurb}</p>
+          {subscribed ? (
+            <p className="ft-news-done" role="status">{t.nlDone}</p>
+          ) : (
+            <form className="ft-news-form" onSubmit={onSubscribe}>
+              <input
+                className="ft-news-input"
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t.nlPlaceholder}
+                aria-label={t.nlHeading}
+              />
+              <button className="ft-news-btn" type="submit">{t.nlButton}</button>
+            </form>
+          )}
+        </div>
+      </div>
+
+      <div className="ft-lower">
+        <span className="ft-copy">
+          © {year} The Interview Room™ · {t.rights}
+        </span>
+        <div className="ft-locale" role="group" aria-label={lang === "es" ? "Idioma" : "Language"}>
+          <button
+            className={`ft-lang${lang === "es" ? " on" : ""}`}
+            aria-pressed={lang === "es"}
+            onClick={() => setLangShared("es")}
+          >
+            es
+          </button>
+          <span className="ft-locale-sep" aria-hidden="true">/</span>
+          <button
+            className={`ft-lang${lang === "en" ? " on" : ""}`}
+            aria-pressed={lang === "en"}
+            onClick={() => setLangShared("en")}
+          >
+            en
+          </button>
+        </div>
+      </div>
     </footer>
   );
 }
