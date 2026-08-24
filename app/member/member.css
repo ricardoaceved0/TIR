@@ -16,6 +16,15 @@
   --mark: #f4c245;
   --mark-soft: #fdf0ce;
   --ok: #2f6b4f;
+  /* semantic tokens for theming (see [data-theme="dark"] block at end) */
+  --body: #3d3d45;          /* secondary text on light surfaces */
+  --reading: #26262c;       /* long-form reading text */
+  --line: #d3d3dd;          /* hairline borders on light surfaces */
+  --surface-inverse: #1c1c1c; /* dark slabs (header, .card.dark) — stays dark */
+  --on-inverse: #f1eff4;    /* text on inverse surfaces (light in both themes) */
+  --on-mark: #1c1c1c;       /* text/icons on the gold accent (dark in both themes) */
+  --danger: #b23b3b;        /* error / destructive text */
+  --ghost: #c9c9d6;         /* background dictionary words */
   --r: 14px;
   --maxw: 1120px;
 
@@ -47,7 +56,7 @@
 .tir .ghost-bg span {
   position: absolute;
   font-family: "Playfair Display", serif;
-  color: #c9c9d6;
+  color: var(--ghost);
   opacity: 0.38;
   white-space: nowrap;
   user-select: none;
@@ -76,9 +85,9 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  background: var(--ink);
-  color: var(--paper);
-  border-bottom: 1px solid var(--ink);
+  background: var(--surface-inverse);
+  color: var(--on-inverse);
+  border-bottom: 1px solid var(--surface-inverse);
 }
 .tir .bar-in {
   max-width: var(--maxw);
@@ -183,7 +192,7 @@
   height: 7px;
   border-radius: 50%;
   background: var(--mark);
-  box-shadow: 0 0 0 2px var(--ink);
+  box-shadow: 0 0 0 2px var(--surface-inverse);
 }
 
 .tir .hdr-btn.avatar {
@@ -192,7 +201,7 @@
   padding: 0;
   border-radius: 50%;
   background: var(--mark);
-  color: var(--ink);
+  color: var(--on-mark);
   font-weight: 600;
   font-size: 12px;
   letter-spacing: 0.06em;
@@ -200,7 +209,7 @@
 }
 .tir .hdr-btn.avatar:hover {
   background: #f7cf5f;
-  color: var(--ink);
+  color: var(--on-mark);
   border-color: transparent;
 }
 .tir .hdr-avatar-img {
@@ -236,7 +245,7 @@
   appearance: none;
   background: none;
   border: 0;
-  border-right: 1px solid #d8d8e0;
+  border-right: 1px solid var(--line);
   padding: 14px 20px;
   cursor: pointer;
   text-align: left;
@@ -245,7 +254,7 @@
   color: var(--muted);
   transition: 0.18s;
 }
-.tir .step:first-child { border-left: 1px solid #d8d8e0; }
+.tir .step:first-child { border-left: 1px solid var(--line); }
 .tir .step .num {
   display: block;
   font-family: "IBM Plex Mono", monospace;
@@ -274,7 +283,7 @@
   flex: 1;
   background: var(--paper);
   border: 0;
-  border-right: 1px solid #d8d8e0;
+  border-right: 1px solid var(--line);
   padding: 13px 0;
   cursor: pointer;
   text-align: center;
@@ -297,7 +306,7 @@
   overflow: hidden;
   max-height: 0;
   padding: 0;
-  border-top: 0 solid #e2e2e9;
+  border-top: 0 solid var(--line);
   opacity: 0;
   transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease;
 }
@@ -325,7 +334,7 @@
 /* ---------- memory ribbon ---------- */
 .tir .ribbon {
   background: var(--wash-deep);
-  border-bottom: 1px solid #c6c6d2;
+  border-bottom: 1px solid var(--line);
   font-family: "IBM Plex Mono", monospace;
   font-size: 10.5px;
   letter-spacing: 0.03em;
@@ -383,7 +392,7 @@
 }
 .tir .lede {
   font-size: 15px;
-  color: #3d3d45;
+  color: var(--body);
   max-width: 60ch;
   margin-top: 14px;
 }
@@ -395,7 +404,7 @@
   padding: 26px;
 }
 .tir .card.flat { border-width: 1px; }
-.tir .card.dark { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.tir .card.dark { background: var(--surface-inverse); color: var(--on-inverse); border-color: var(--surface-inverse); }
 .tir .card.dark .lede { color: #c9c9d2; }
 .tir .grid { display: grid; gap: 16px; }
 .tir .stack > * + * { margin-top: 16px; }
@@ -422,8 +431,8 @@
 .tir .btn:hover { background: var(--paper); color: var(--ink); }
 .tir .btn.ghost { background: transparent; color: var(--ink); }
 .tir .btn.ghost:hover { background: var(--ink); color: var(--paper); }
-.tir .btn.onDark { background: var(--paper); color: var(--ink); border-color: var(--paper); }
-.tir .btn.onDark:hover { background: transparent; color: var(--paper); }
+.tir .btn.onDark { background: var(--on-inverse); color: var(--on-mark); border-color: var(--on-inverse); }
+.tir .btn.onDark:hover { background: transparent; color: var(--on-inverse); }
 .tir .btn:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
 .tir .btn.sm { padding: 10px 18px; }
 
@@ -444,7 +453,7 @@
   font-size: 14.5px;
   color: var(--ink);
   background: var(--wash);
-  border: 1px solid #c6c6d2;
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 13px 15px;
   resize: vertical;
@@ -471,8 +480,8 @@
   cursor: pointer;
   background: var(--paper);
   border: 0;
-  border-right: 1px solid #d8d8e0;
-  border-bottom: 1px solid #d8d8e0;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
   padding: 20px;
   transition: 0.18s;
   font-family: inherit;
@@ -524,7 +533,7 @@
 .tir .entry .def {
   margin-top: 9px;
   max-width: 66ch;
-  color: #3d3d45;
+  color: var(--body);
   font-size: 14.5px;
 }
 .tir .entry .ev {
@@ -562,7 +571,7 @@
   cursor: pointer;
   background: var(--paper);
   border: 0;
-  border-right: 1px solid #d8d8e0;
+  border-right: 1px solid var(--line);
   padding: 12px 10px;
   font-family: "Poppins", sans-serif;
   font-size: 10px;
@@ -577,7 +586,7 @@
 .tir .mode[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
 .tir .mode:focus-visible { outline: 3px solid var(--mark); outline-offset: -3px; }
 
-.tir .q-block { background: var(--ink); color: var(--paper); border-radius: var(--r); padding: 38px 34px; }
+.tir .q-block { background: var(--surface-inverse); color: var(--on-inverse); border-radius: var(--r); padding: 38px 34px; }
 .tir .q-meta {
   display: flex;
   justify-content: space-between;
@@ -622,7 +631,7 @@
   color: var(--muted);
   margin-bottom: 14px;
 }
-.tir .answer { font-size: 15px; line-height: 1.85; color: #26262c; }
+.tir .answer { font-size: 15px; line-height: 1.85; color: var(--reading); }
 .tir .answer.serif { font-family: "Playfair Display", serif; font-size: 16px; }
 
 .tir mark.m {
@@ -667,10 +676,10 @@
   gap: 14px;
   align-items: center;
   padding: 15px 20px;
-  border-bottom: 1px solid #e2e2e9;
+  border-bottom: 1px solid var(--line);
 }
 .tir .rub-row:last-child { border-bottom: 0; }
-.tir .rub-row.master { background: var(--ink); color: var(--paper); }
+.tir .rub-row.master { background: var(--surface-inverse); color: var(--on-inverse); }
 .tir .rub-row .cr { font-size: 13.5px; font-weight: 500; }
 .tir .rub-row .cr small {
   display: block;
@@ -680,7 +689,7 @@
   margin-top: 2px;
 }
 .tir .rub-row.master .cr small { color: #a8a8b4; }
-.tir .meter { height: 6px; background: #e2e2e9; border-radius: 99px; overflow: hidden; }
+.tir .meter { height: 6px; background: var(--line); border-radius: 99px; overflow: hidden; }
 .tir .rub-row.master .meter { background: #3a3a42; }
 .tir .meter i { display: block; height: 100%; background: var(--ink); border-radius: 99px; }
 .tir .rub-row.master .meter i { background: var(--mark); }
@@ -693,7 +702,7 @@
   gap: 16px;
   align-items: start;
   padding: 18px 0;
-  border-bottom: 1px solid #d0d0da;
+  border-bottom: 1px solid var(--line);
 }
 .tir .asset:last-child { border-bottom: 0; }
 .tir .asset .ix {
@@ -716,7 +725,7 @@
 }
 .tir .pill.done { background: var(--ink); color: var(--paper); }
 .tir .pill.wip { background: var(--mark); border-color: var(--mark); }
-.tir .pill.todo { color: var(--muted); border-color: #c6c6d2; }
+.tir .pill.todo { color: var(--muted); border-color: var(--line); }
 
 .tir .story { border: 1px solid var(--hair); border-radius: 10px; padding: 18px; background: var(--paper); }
 .tir .story .tag {
@@ -734,6 +743,8 @@
 }
 .tir .story .mt { font-size: 12.5px; color: var(--muted); }
 .tir .story .mt b { color: var(--ink); font-family: "IBM Plex Mono", monospace; font-size: 12px; }
+.tir .mt-accent { color: #8a6d18; font-weight: 600; }
+[data-theme="dark"] .tir .mt-accent { color: var(--mark); }
 
 /* ---------- misc ---------- */
 .tir .kicker-rule { height: 1px; background: var(--hair); margin: 34px 0; }
@@ -747,7 +758,7 @@
 @media (max-width: 640px) {
   .tir .entrada-form-row { grid-template-columns: 1fr; }
 }
-.tir .txt.subtle { background: #f3f3f7; }
+.tir .txt.subtle { background: var(--wash); }
 
 /* ---------- AI analysis box (Diagnóstico) ---------- */
 .tir .ai-box {
@@ -766,7 +777,7 @@
   font-family: "Playfair Display", serif;
   font-size: 17px;
   line-height: 1.6;
-  color: #26262c;
+  color: var(--reading);
 }
 .tir .ai-loading-row {
   display: flex;
@@ -833,7 +844,7 @@
   font-size: 11px;
   font-weight: 600;
 }
-.tir .pdot.done { background: var(--mark); color: var(--ink); }
+.tir .pdot.done { background: var(--mark); color: var(--on-mark); }
 .tir .pdot.todo {
   background: transparent;
   border: 2px solid #4b4b55;
@@ -846,7 +857,7 @@
   gap: 12px;
   min-width: 0;
 }
-.tir .pbody .pt { font-size: 13.5px; font-weight: 600; color: var(--paper); }
+.tir .pbody .pt { font-size: 13.5px; font-weight: 600; color: var(--on-inverse); }
 .tir .pbody .ps {
   font-family: "IBM Plex Mono", monospace;
   font-size: 11px;
@@ -903,7 +914,7 @@
 .tir .need-label {
   font-size: 13.5px;
   font-weight: 600;
-  color: var(--paper);
+  color: var(--on-inverse);
   min-width: 0;
 }
 .tir .need-match {
@@ -915,7 +926,7 @@
   border-radius: 999px;
   white-space: nowrap;
 }
-.tir .need-match.hi { color: var(--ink); background: var(--mark); }
+.tir .need-match.hi { color: var(--on-mark); background: var(--mark); }
 .tir .need-match.mid { color: #e7e7ee; background: #3d3d47; }
 .tir .need-match.lo { color: #f0c7c7; background: #4a3535; }
 
@@ -968,9 +979,9 @@
 /* ---------- interview configuration (collapsible) ---------- */
 .tir .cfg {
   margin-top: 22px;
-  border: 1px solid #c6c6d2;
+  border: 1px solid var(--line);
   border-radius: 10px;
-  background: #f3f3f7;
+  background: var(--wash);
   overflow: hidden;
 }
 .tir .cfg.open { background: var(--paper); border-color: var(--hair); }
@@ -1011,7 +1022,7 @@
 .tir .cfg-head:focus-visible { outline: 3px solid var(--mark); outline-offset: -3px; }
 .tir .cfg-body {
   padding: 4px 18px 20px;
-  border-top: 1px solid #e2e2e9;
+  border-top: 1px solid var(--line);
   animation: tir-rise 0.28s ease both;
 }
 .tir .cfg-group + .cfg-group { margin-top: 18px; }
@@ -1030,7 +1041,7 @@
   min-width: 120px;
   background: var(--paper);
   border: 0;
-  border-right: 1px solid #d8d8e0;
+  border-right: 1px solid var(--line);
   padding: 12px 10px;
   cursor: pointer;
   font-family: "Poppins", sans-serif;
@@ -1059,14 +1070,14 @@
   gap: 12px;
   background: var(--paper);
   border: 0;
-  border-bottom: 1px solid #e2e2e9;
+  border-bottom: 1px solid var(--line);
   padding: 15px;
   cursor: pointer;
   font-family: "Poppins", sans-serif;
   font-size: 13.5px;
   font-weight: 600;
   letter-spacing: 0.03em;
-  color: #3d3d45;
+  color: var(--body);
   text-align: left;
   transition: 0.15s;
 }
@@ -1075,7 +1086,7 @@
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  border: 2px solid #c6c6d2;
+  border: 2px solid var(--line);
   flex: none;
 }
 .tir .vrow[aria-checked="true"] { background: var(--ink); color: var(--paper); }
@@ -1092,7 +1103,7 @@
   gap: 8px;
   align-items: center;
   background: var(--wash);
-  border: 1px solid #c6c6d2;
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 10px 12px;
 }
@@ -1142,7 +1153,7 @@
   line-height: 1.55;
 }
 .tir .agentline b { color: var(--ink); font-weight: 500; }
-.tir .card.dark .agentline b { color: var(--paper); }
+.tir .card.dark .agentline b { color: var(--on-inverse); }
 .tir .blink {
   width: 7px;
   height: 7px;
@@ -1165,7 +1176,7 @@
 
 /* Diagnóstico · question set (from the model) */
 .tir .qset { margin-top: 10px; }
-.tir .qitem { padding: 14px 0; border-top: 1px solid #d8d8e0; }
+.tir .qitem { padding: 14px 0; border-top: 1px solid var(--line); }
 .tir .qitem:first-child { border-top: 0; }
 .tir .qq {
   font-family: "Playfair Display", serif;
@@ -1185,7 +1196,7 @@
 .tir .cv-nudge { font-size: 12.5px; color: var(--muted); margin: 0; }
 .tir .cv-nudge a { color: var(--ink); font-weight: 600; }
 .tir .foot {
-  border-top: 1px solid #c6c6d2;
+  border-top: 1px solid var(--line);
   margin-top: 40px;
   padding: 26px 0;
   font-size: 11.5px;
@@ -1276,3 +1287,48 @@
   .tir *::before,
   .tir *::after { animation: none !important; transition: none !important; }
 }
+
+/* ============================================================
+   DARK THEME
+   The pre-paint script in app/layout.tsx stamps data-theme="dark"
+   on <html>. We only flip the token values here — every rule above
+   reads them, so the whole surface re-themes from this one block.
+   Overloaded tokens (--ink / --paper) intentionally invert; the
+   persistent dark slabs (header, .card.dark, .q-block, master row)
+   read the non-flipping --surface-inverse / --on-inverse instead.
+   ============================================================ */
+[data-theme="dark"] .tir,
+.tir[data-theme="dark"] {
+  --ink: #ece9ef;            /* primary text — now light */
+  --ink-soft: #cfccd4;
+  --paper: #1c1b19;          /* card / input surfaces — now dark */
+  --wash: #131211;           /* page background — deep */
+  --wash-deep: #262421;
+  --muted: #a9a49c;
+  --hair: rgba(241, 239, 244, 0.16);
+  --mark: #f4c245;           /* gold holds across themes */
+  --mark-soft: rgba(244, 194, 69, 0.13);
+  --ok: #6f9269;
+  --body: #c3c0c8;
+  --reading: #dcd9e0;
+  --line: rgba(241, 239, 244, 0.14);
+  --surface-inverse: #262421; /* slabs sit just above page bg */
+  --on-inverse: #ece9ef;
+  --on-mark: #1c1c1c;         /* text on gold stays dark */
+  --danger: #e58c78;
+  --ghost: rgba(241, 239, 244, 0.05);
+  color-scheme: dark;
+}
+
+/* residual literals that read wrong once the surface is dark */
+[data-theme="dark"] .tir .ai-shimmer i {
+  background: linear-gradient(90deg, #201f1d 0%, #2b2a27 50%, #201f1d 100%);
+  background-size: 200% 100%;
+}
+[data-theme="dark"] .tir .note .who { color: #d8b04e; }
+[data-theme="dark"] .tir .chip .x { color: var(--muted); }
+[data-theme="dark"] .tir .adm-rolebadge.locked {
+  color: #e9b4b4; background: rgba(192, 73, 47, 0.16); border-color: rgba(192, 73, 47, 0.32);
+}
+[data-theme="dark"] .tir .adm-msg.err,
+[data-theme="dark"] .tir .st-savemsg.err { color: #e58c78; }

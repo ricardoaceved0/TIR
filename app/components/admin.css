@@ -55,7 +55,7 @@
   font-size: 14.5px;
   color: var(--ink);
   background: var(--wash);
-  border: 1px solid #c6c6d2;
+  border: 1px solid var(--line);
   border-radius: 6px;
   padding: 13px 15px;
   appearance: none;
@@ -106,8 +106,8 @@
 .tir .adm-row-actions { display: inline-flex; align-items: center; gap: 14px; }
 .tir .adm-rolebadge.locked { color: #7a2e2e; background: #f4dede; border: 1px solid #e6c2c2; }
 .tir .adm-rolebadge.regular { color: var(--ink); background: var(--wash-deep); }
-.tir .adm-rolebadge.admin { color: #26262c; background: var(--mark-soft); border: 1px solid var(--mark); }
-.tir .adm-rolebadge.super_admin { color: var(--ink); background: var(--mark); }
+.tir .adm-rolebadge.admin { color: var(--reading); background: var(--mark-soft); border: 1px solid var(--mark); }
+.tir .adm-rolebadge.super_admin { color: var(--on-mark); background: var(--mark); }
 .tir .adm-empty { font-size: 13px; color: var(--muted); padding: 8px 0; }
 
 /* ---------- Lenguaje (coming soon) ---------- */
@@ -125,7 +125,7 @@
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--ink);
+  color: var(--on-mark);
   background: var(--mark);
   padding: 6px 14px;
   border-radius: 999px;
