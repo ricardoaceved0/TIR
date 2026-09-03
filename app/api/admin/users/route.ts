@@ -1,12 +1,15 @@
 import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/admin";
 import { isAdminRole, isRole, Role } from "@/lib/auth/roles";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** Verify the caller has an admin/super_admin session. Returns their role. */
-async function requireAdmin(): Promise<{ role: Role } | { error: string; status: number }> {
+type Gate = { role: Role; id: string };
+
+/** Verify the caller has an admin/super_admin session. Returns role + id. */
+async function requireAdmin(): Promise<Gate | { error: string; status: number }> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -15,20 +18,38 @@ async function requireAdmin(): Promise<{ role: Role } | { error: string; status:
   const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   const role: Role = isRole(data?.role) ? data.role : "regular";
   if (!isAdminRole(role)) return { error: "No autorizado.", status: 403 };
-  return { role };
+  return { role, id: user.id };
 }
+
+/**
+ * Who may a given actor act on (change role / delete / reset password)?
+ *   super_admin → anyone.
+ *   admin       → only regular users (never an admin or super_admin).
+ * This is what keeps super_admins un-removable by admins.
+ */
+function canManage(actorRole: Role, targetRole: Role): boolean {
+  if (actorRole === "super_admin") return true;
+  if (actorRole === "admin") return targetRole === "regular";
+  return false;
+}
+
+/** Read a target user's current role (defaults to 'regular' if no row). */
+async function targetRole(admin: SupabaseClient, id: string): Promise<Role> {
+  const { data } = await admin.from("profiles").select("role").eq("id", id).single();
+  return isRole(data?.role) ? data.role : "regular";
+}
+
+const NO_SERVICE = {
+  ok: false as const,
+  error: "SUPABASE_SERVICE_ROLE_KEY no está configurada en el servidor.",
+};
 
 export async function GET() {
   const gate = await requireAdmin();
   if ("error" in gate) return Response.json({ ok: false, error: gate.error }, { status: gate.status });
 
   const admin = createServiceClient();
-  if (!admin) {
-    return Response.json(
-      { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY no está configurada en el servidor." },
-      { status: 500 }
-    );
-  }
+  if (!admin) return Response.json(NO_SERVICE, { status: 500 });
 
   const { data: list, error } = await admin.auth.admin.listUsers();
   if (error) return Response.json({ ok: false, error: error.message }, { status: 500 });
@@ -51,10 +72,16 @@ export async function GET() {
     };
   });
 
-  return Response.json({ ok: true, users });
+  // `me` lets the client render only the controls this caller is allowed to use.
+  return Response.json({ ok: true, users, me: { id: gate.id, role: gate.role } });
 }
 
-/** Unlock a locked/deletion-requested account (admin+). */
+/**
+ * PATCH is action-based:
+ *   action "role"           → change a user's access level (super_admin only)
+ *   action "reset_password" → set a new password (per canManage)
+ *   action "unlock" (default) → clear a lock / deletion request (admin+)
+ */
 export async function PATCH(req: Request) {
   const gate = await requireAdmin();
   if ("error" in gate) return Response.json({ ok: false, error: gate.error }, { status: gate.status });
@@ -62,38 +89,78 @@ export async function PATCH(req: Request) {
   const body = await req.json().catch(() => null);
   const id = String(body?.id ?? "");
   if (!id) return Response.json({ ok: false, error: "Falta el id." }, { status: 400 });
+  const action = String(body?.action ?? "unlock");
 
   const admin = createServiceClient();
-  if (!admin) {
-    return Response.json(
-      { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY no está configurada en el servidor." },
-      { status: 500 }
-    );
+  if (!admin) return Response.json(NO_SERVICE, { status: 500 });
+
+  if (action === "role") {
+    if (gate.role !== "super_admin") {
+      return Response.json(
+        { ok: false, error: "Solo un Super Admin puede cambiar niveles de acceso." },
+        { status: 403 }
+      );
+    }
+    if (id === gate.id) {
+      return Response.json(
+        { ok: false, error: "No puedes cambiar tu propio nivel de acceso." },
+        { status: 400 }
+      );
+    }
+    const newRole = body?.role;
+    if (!isRole(newRole)) {
+      return Response.json({ ok: false, error: "Nivel de acceso inválido." }, { status: 400 });
+    }
+    const { error } = await admin.from("profiles").upsert({ id, role: newRole });
+    if (error) return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return Response.json({ ok: true });
   }
 
+  if (action === "reset_password") {
+    const password = String(body?.password ?? "");
+    if (password.length < 8) {
+      return Response.json(
+        { ok: false, error: "La contraseña debe tener al menos 8 caracteres." },
+        { status: 400 }
+      );
+    }
+    if (!canManage(gate.role, await targetRole(admin, id))) {
+      return Response.json(
+        { ok: false, error: "No tienes permiso para gestionar esta cuenta." },
+        { status: 403 }
+      );
+    }
+    const { error } = await admin.auth.admin.updateUserById(id, { password });
+    if (error) return Response.json({ ok: false, error: error.message }, { status: 500 });
+    return Response.json({ ok: true });
+  }
+
+  // default: unlock a locked / deletion-requested account
   const { error } = await admin.auth.admin.updateUserById(id, { ban_duration: "none" });
   if (error) return Response.json({ ok: false, error: error.message }, { status: 500 });
   await admin.from("profiles").update({ locked: false, deletion_requested_at: null }).eq("id", id);
   return Response.json({ ok: true });
 }
 
-/** Permanently delete an account and its data (super_admin only). */
+/** Permanently delete an account and its data (per canManage; never yourself). */
 export async function DELETE(req: Request) {
   const gate = await requireAdmin();
   if ("error" in gate) return Response.json({ ok: false, error: gate.error }, { status: gate.status });
-  if (gate.role !== "super_admin") {
-    return Response.json({ ok: false, error: "Solo un Super Admin puede eliminar cuentas." }, { status: 403 });
-  }
 
   const body = await req.json().catch(() => null);
   const id = String(body?.id ?? "");
   if (!id) return Response.json({ ok: false, error: "Falta el id." }, { status: 400 });
+  if (id === gate.id) {
+    return Response.json({ ok: false, error: "No puedes eliminar tu propia cuenta." }, { status: 400 });
+  }
 
   const admin = createServiceClient();
-  if (!admin) {
+  if (!admin) return Response.json(NO_SERVICE, { status: 500 });
+
+  if (!canManage(gate.role, await targetRole(admin, id))) {
     return Response.json(
-      { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY no está configurada en el servidor." },
-      { status: 500 }
+      { ok: false, error: "No tienes permiso para eliminar esta cuenta." },
+      { status: 403 }
     );
   }
 
@@ -131,12 +198,7 @@ export async function POST(req: Request) {
   }
 
   const admin = createServiceClient();
-  if (!admin) {
-    return Response.json(
-      { ok: false, error: "SUPABASE_SERVICE_ROLE_KEY no está configurada en el servidor." },
-      { status: 500 }
-    );
-  }
+  if (!admin) return Response.json(NO_SERVICE, { status: 500 });
 
   const { data: created, error } = await admin.auth.admin.createUser({
     email,

@@ -103,7 +103,29 @@
   white-space: nowrap;
 }
 .tir .adm-row-badges { display: inline-flex; align-items: center; gap: 8px; }
-.tir .adm-row-actions { display: inline-flex; align-items: center; gap: 14px; }
+.tir .adm-row-actions { display: inline-flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: flex-end; }
+
+/* existing-user row: role control + per-row actions, right-aligned */
+.tir .adm-row-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+.tir select.txt.adm-rolesel {
+  width: auto;
+  min-width: 148px;
+  padding: 8px 32px 8px 12px;
+  font-size: 12.5px;
+}
+.tir .adm-you {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: var(--mark);
+  text-transform: lowercase;
+}
 .tir .adm-rolebadge.locked { color: #7a2e2e; background: #f4dede; border: 1px solid #e6c2c2; }
 .tir .adm-rolebadge.regular { color: var(--ink); background: var(--wash-deep); }
 .tir .adm-rolebadge.admin { color: var(--reading); background: var(--mark-soft); border: 1px solid var(--mark); }
@@ -167,4 +189,9 @@
 
 @media (max-width: 620px) {
   .tir .adm-userform { grid-template-columns: 1fr; }
+  /* stack each user row so the role control + actions sit under the email */
+  .tir .adm-userrow { grid-template-columns: 1fr; gap: 10px; }
+  .tir .adm-row-right { align-items: flex-start; }
+  .tir .adm-row-actions { justify-content: flex-start; }
+  .tir select.txt.adm-rolesel { width: 100%; }
 }

@@ -23,7 +23,9 @@ export default function AdminUsersClient() {
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
   const [users, setUsers] = useState<UserRow[]>([]);
+  const [me, setMe] = useState<{ id: string; role: Role } | null>(null);
   const [listErr, setListErr] = useState("");
+  const [rowMsg, setRowMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
   const [loadingList, setLoadingList] = useState(true);
   const [rowBusy, setRowBusy] = useState<string | null>(null);
 
@@ -35,12 +37,69 @@ export default function AdminUsersClient() {
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
       setUsers(data.users as UserRow[]);
+      setMe(data.me ?? null);
     } catch (e) {
       setListErr(e instanceof Error ? e.message : "No se pudieron cargar los usuarios.");
     } finally {
       setLoadingList(false);
     }
   }, []);
+
+  // Mirror of the server rule (UI gating only — the API enforces it for real).
+  const isSelf = (u: UserRow) => Boolean(me && me.id === u.id);
+  const canManage = (u: UserRow) => {
+    if (!me) return false;
+    if (me.role === "super_admin") return true;
+    if (me.role === "admin") return u.role === "regular";
+    return false;
+  };
+  const canChangeRole = (u: UserRow) => me?.role === "super_admin" && !isSelf(u);
+
+  const changeRole = async (u: UserRow, newRole: Role) => {
+    if (newRole === u.role) return;
+    setRowBusy(u.id);
+    setRowMsg(null);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: u.id, action: "role", role: newRole }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      setRowMsg({ kind: "ok", text: `${u.email}: nivel cambiado a ${ROLE_LABELS[newRole]}.` });
+      loadUsers();
+    } catch (e) {
+      setRowMsg({ kind: "err", text: e instanceof Error ? e.message : "No se pudo cambiar el nivel." });
+    } finally {
+      setRowBusy(null);
+    }
+  };
+
+  const resetPassword = async (u: UserRow) => {
+    const pw = window.prompt(`Nueva contraseña para ${u.email} (mínimo 8 caracteres):`);
+    if (pw == null) return; // cancelled
+    if (pw.length < 8) {
+      setRowMsg({ kind: "err", text: "La contraseña debe tener al menos 8 caracteres." });
+      return;
+    }
+    setRowBusy(u.id);
+    setRowMsg(null);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: u.id, action: "reset_password", password: pw }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      setRowMsg({ kind: "ok", text: `Contraseña restablecida para ${u.email}.` });
+    } catch (e) {
+      setRowMsg({ kind: "err", text: e instanceof Error ? e.message : "No se pudo restablecer la contraseña." });
+    } finally {
+      setRowBusy(null);
+    }
+  };
 
   useEffect(() => {
     loadUsers();
@@ -69,6 +128,7 @@ export default function AdminUsersClient() {
       return;
     }
     setRowBusy(u.id);
+    setRowMsg(null);
     try {
       const res = await fetch("/api/admin/users", {
         method: "DELETE",
@@ -77,9 +137,10 @@ export default function AdminUsersClient() {
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      setRowMsg({ kind: "ok", text: `Cuenta eliminada: ${u.email}.` });
       loadUsers();
     } catch (e) {
-      setListErr(e instanceof Error ? e.message : "No se pudo eliminar.");
+      setRowMsg({ kind: "err", text: e instanceof Error ? e.message : "No se pudo eliminar." });
     } finally {
       setRowBusy(null);
     }
@@ -171,7 +232,13 @@ export default function AdminUsersClient() {
           <div className="eyebrow" style={{ margin: 0 }}>Usuarios existentes</div>
           <button className="pf-linkbtn" onClick={loadUsers}>Refrescar</button>
         </div>
+        {me?.role === "super_admin" && (
+          <p className="adm-empty" style={{ marginTop: -4, marginBottom: 10 }}>
+            Cambia el nivel de acceso, restablece la contraseña o elimina cualquier cuenta.
+          </p>
+        )}
 
+        {rowMsg && <p className={`adm-msg ${rowMsg.kind}`} style={{ marginBottom: 8 }}>{rowMsg.text}</p>}
         {loadingList && <p className="adm-empty">Cargando…</p>}
         {!loadingList && listErr && <p className="adm-msg err">{listErr}</p>}
         {!loadingList && !listErr && users.length === 0 && <p className="adm-empty">Todavía no hay usuarios.</p>}
@@ -179,12 +246,41 @@ export default function AdminUsersClient() {
         {users.map((u) => (
           <div className="adm-userrow" key={u.id}>
             <div>
-              <div className="adm-user-email">{u.email}</div>
+              <div className="adm-user-email">
+                {u.email}
+                {isSelf(u) && <span className="adm-you"> · tú</span>}
+              </div>
               {u.full_name && <div className="adm-user-name">{u.full_name}</div>}
             </div>
-            <div className="adm-row-badges">
-              {u.locked && <span className="adm-rolebadge locked">Bloqueado</span>}
-              <span className={`adm-rolebadge ${u.role}`}>{ROLE_LABELS[u.role]}</span>
+            <div className="adm-row-right">
+              <div className="adm-row-badges">
+                {u.locked && <span className="adm-rolebadge locked">Bloqueado</span>}
+                {canChangeRole(u) ? (
+                  <select
+                    className="txt adm-rolesel"
+                    aria-label={`Nivel de acceso de ${u.email}`}
+                    value={u.role}
+                    disabled={rowBusy === u.id}
+                    onChange={(e) => changeRole(u, e.target.value as Role)}
+                  >
+                    <option value="regular">Regular</option>
+                    <option value="admin">Admin</option>
+                    <option value="super_admin">Super Admin</option>
+                  </select>
+                ) : (
+                  <span className={`adm-rolebadge ${u.role}`}>{ROLE_LABELS[u.role]}</span>
+                )}
+              </div>
+              {canManage(u) && !isSelf(u) && (
+                <div className="adm-row-actions">
+                  <button className="pf-linkbtn" disabled={rowBusy === u.id} onClick={() => resetPassword(u)}>
+                    Restablecer contraseña
+                  </button>
+                  <button className="pf-linkbtn danger" disabled={rowBusy === u.id} onClick={() => purge(u)}>
+                    Eliminar
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ))}
