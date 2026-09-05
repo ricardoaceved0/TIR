@@ -158,13 +158,14 @@ export default function MemberArea() {
   const [aiError, setAiError] = useState("");
 
   // Onboarding tracker ("Lo que la sala ya sabe de ti") — real completion of
-  // Hoja de Vida (a CV exists), Conocimientos, and Logros, plus the data the
-  // diagnostic feeds on. Refreshed each mount (profile edits are full navs).
-  const [onb, setOnb] = useState({ cv: false, know: false, logros: false });
-  const [lists, setLists] = useState<{
-    conocimientos: string[];
-    logros: { title: string; impact: string; year: string; detail: string }[];
-  }>({ conocimientos: [], logros: [] });
+  // Tu CV (a CV exists), Tu LinkedIn (an export uploaded), and Tu Momento
+  // (a moment chosen), plus the data the diagnostic feeds on. Refreshed each
+  // mount (profile edits are full navs).
+  const [onb, setOnb] = useState({ cv: false, linkedin: false, momento: false });
+  const [extra, setExtra] = useState<{ linkedinText: string; momento: string }>({
+    linkedinText: "",
+    momento: "",
+  });
 
   useEffect(() => {
     let alive = true;
@@ -177,15 +178,13 @@ export default function MemberArea() {
         if (!user) return;
         const [cvsRes, profRes] = await Promise.all([
           supabase.from("cvs").select("id").eq("user_id", user.id).limit(1),
-          supabase.from("profiles").select("knowledge, achievements").eq("id", user.id).maybeSingle(),
+          supabase.from("profiles").select("linkedin_markdown, momento").eq("id", user.id).maybeSingle(),
         ]);
         if (!alive) return;
-        const know = Array.isArray(profRes.data?.knowledge) ? (profRes.data!.knowledge as string[]) : [];
-        const logros = Array.isArray(profRes.data?.achievements)
-          ? (profRes.data!.achievements as { title: string; impact: string; year: string; detail: string }[])
-          : [];
-        setOnb({ cv: (cvsRes.data?.length ?? 0) > 0, know: know.length > 0, logros: logros.length > 0 });
-        setLists({ conocimientos: know, logros });
+        const linkedinText = typeof profRes.data?.linkedin_markdown === "string" ? profRes.data.linkedin_markdown : "";
+        const momento = typeof profRes.data?.momento === "string" ? profRes.data.momento : "";
+        setOnb({ cv: (cvsRes.data?.length ?? 0) > 0, linkedin: linkedinText.length > 0, momento: momento.length > 0 });
+        setExtra({ linkedinText, momento });
       } catch {
         /* not signed in */
       }
@@ -196,9 +195,9 @@ export default function MemberArea() {
   }, []);
 
   const onbSteps = [
-    { n: 1, label: "Hoja de Vida", done: onb.cv, hash: "mis-cvs" },
-    { n: 2, label: "Conocimientos", done: onb.know, hash: "conocimientos" },
-    { n: 3, label: "Logros", done: onb.logros, hash: "logros" },
+    { n: 1, label: "Tu CV", done: onb.cv, hash: "mis-cvs" },
+    { n: 2, label: "Tu LinkedIn", done: onb.linkedin, hash: "tu-linkedin" },
+    { n: 3, label: "Tu Momento", done: onb.momento, hash: "tu-momento" },
   ];
 
   const submitEntrada = async () => {
@@ -236,8 +235,8 @@ export default function MemberArea() {
           linkedinUrl: liUrl,
           tools,
           cv_text: cvText,
-          conocimientos: lists.conocimientos,
-          logros: lists.logros,
+          linkedinText: extra.linkedinText,
+          momento: extra.momento,
         }),
       });
       const data = await res.json().catch(() => null);
@@ -519,7 +518,7 @@ export default function MemberArea() {
               </h1>
               <p className="lede">
                 La sala leyó el job description y lo tradujo a lo que de verdad te van a medir.
-                Esto es lo que el puesto exige — y qué tan cerca estás hoy según tu Hoja de Vida.
+                Esto es lo que el puesto exige — y qué tan cerca estás hoy según tu CV.
               </p>
             </div>
 

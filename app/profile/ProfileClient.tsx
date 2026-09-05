@@ -6,14 +6,15 @@ import "./profile.css";
 import { SiteHeader, SiteFooter } from "@/app/components/SiteChrome";
 import { createClient } from "@/lib/supabase/client";
 import { Account, fetchAccount, initialsFrom } from "@/lib/auth/roles";
+import { MOMENTS } from "@/lib/prompt/moments";
 
 /* ─────────────────────────── sections ─────────────────────────── */
 
 type SectionId =
   | "main"
   | "cvs"
-  | "conocimientos"
-  | "logros"
+  | "linkedin"
+  | "momento"
   | "history"
   | "prefs"
   | "sub"
@@ -21,9 +22,9 @@ type SectionId =
 
 const SECTIONS: { id: SectionId; hash: string; label: string; sub: string }[] = [
   { id: "main", hash: "cuenta", label: "Cuenta", sub: "Nombre, foto, correo y contraseña" },
-  { id: "cvs", hash: "mis-cvs", label: "Mis CVs", sub: "Sube tu CV y conviértelo a Markdown" },
-  { id: "conocimientos", hash: "conocimientos", label: "Conocimientos", sub: "Skills y certificaciones fuera del CV" },
-  { id: "logros", hash: "logros", label: "Logros", sub: "Tus hitos y proyectos clave" },
+  { id: "cvs", hash: "mis-cvs", label: "Tu CV", sub: "Sube tu CV y conviértelo a Markdown" },
+  { id: "linkedin", hash: "tu-linkedin", label: "Tu LinkedIn", sub: "Sube el export de tu perfil" },
+  { id: "momento", hash: "tu-momento", label: "Tu Momento", sub: "Elige tu situación actual" },
   { id: "history", hash: "historial", label: "Historial", sub: "Tus análisis anteriores" },
   { id: "prefs", hash: "preferencias", label: "Preferencias", sub: "Texto, idioma y accesibilidad" },
   { id: "sub", hash: "subscripcion", label: "Subscripción", sub: "Plan, créditos y facturación" },
@@ -86,27 +87,27 @@ function IconShield() {
     </svg>
   );
 }
-function IconTag() {
+function IconLinkedIn() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0l-7-7A2 2 0 0 1 3 12.2V5a2 2 0 0 1 2-2h7.2a2 2 0 0 1 1.4.6l7 7a2 2 0 0 1 0 2.8z" />
-      <circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none" />
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 0 1 4 0v4M11 17v-7" />
     </svg>
   );
 }
-function IconTrophy() {
+function IconMoment() {
   return (
     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 0 1-10 0z" />
-      <path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3" />
+      <circle cx="12" cy="12" r="9" />
+      <path d="M15.5 8.5l-2 5-5 2 2-5z" />
     </svg>
   );
 }
 const ICONS: Record<SectionId, () => React.JSX.Element> = {
   main: IconAccount,
   cvs: IconDoc,
-  conocimientos: IconTag,
-  logros: IconTrophy,
+  linkedin: IconLinkedIn,
+  momento: IconMoment,
   history: IconClock,
   prefs: IconSliders,
   sub: IconCard,
@@ -286,8 +287,8 @@ export default function ProfileClient() {
           <div className="pf-panel">
             {section === "main" && <MainPanel account={account} />}
             {section === "cvs" && <CvsPanel account={account} />}
-            {section === "conocimientos" && <ConocimientosPanel account={account} />}
-            {section === "logros" && <LogrosPanel account={account} />}
+            {section === "linkedin" && <LinkedInPanel account={account} />}
+            {section === "momento" && <MomentoPanel account={account} />}
             {section === "history" && <HistoryPanel account={account} />}
             {section === "prefs" && <PrefsPanel />}
             {section === "sub" && <SubPanel />}
@@ -606,7 +607,7 @@ function CvsPanel({ account }: { account: Account | null }) {
 
   return (
     <>
-      <PanelHead title="Mis CVs" hint="Sube tu hoja de vida en PDF o DOCX y la sala la convierte a Markdown (cv_text) — la versión que el AI lee mejor. Marca cuál usar para tu diagnóstico." />
+      <PanelHead title="Tu CV" hint="Sube tu hoja de vida en PDF o DOCX y la sala la convierte a Markdown (cv_text) — la versión que el AI lee mejor. Marca cuál usar para tu diagnóstico." />
 
       <div
         className={`pf-drop${dragOver ? " over" : ""}${busy ? " busy" : ""}`}
@@ -833,11 +834,178 @@ function SubPanel() {
   );
 }
 
-/* ─────────────────────────── Conocimientos ─────────────────────────── */
+/* ─────────────────────────── Tu LinkedIn ─────────────────────────── */
 
-function ConocimientosPanel({ account }: { account: Account | null }) {
-  const [items, setItems] = useState<string[]>([]);
-  const [draft, setDraft] = useState("");
+function LinkedInPanel({ account }: { account: Account | null }) {
+  const hasSession = !!account?.id;
+  const [filename, setFilename] = useState("");
+  const [markdown, setMarkdown] = useState("");
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  const [dragOver, setDragOver] = useState(false);
+  const fileRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (!account?.id) return;
+    let alive = true;
+    (async () => {
+      try {
+        const { data } = await createClient()
+          .from("profiles")
+          .select("linkedin_markdown, linkedin_filename")
+          .eq("id", account.id)
+          .maybeSingle();
+        if (alive && data) {
+          setMarkdown(typeof data.linkedin_markdown === "string" ? data.linkedin_markdown : "");
+          setFilename(typeof data.linkedin_filename === "string" ? data.linkedin_filename : "");
+        }
+      } catch {
+        /* empty */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [account?.id]);
+
+  const convert = useCallback(
+    async (file: File) => {
+      setErr("");
+      const ext = file.name.split(".").pop()?.toLowerCase();
+      if (ext !== "pdf" && ext !== "docx") {
+        setErr("Solo PDF o DOCX por ahora.");
+        return;
+      }
+      setBusy(true);
+      let fname = file.name;
+      let md = "";
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/cv/convert", { method: "POST", body: fd });
+        const data = await res.json().catch(() => null);
+        if (!res.ok || !data?.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+        fname = (data.filename || file.name) as string;
+        md = data.markdown as string;
+      } catch (e) {
+        setErr(`No se pudo convertir. ${e instanceof Error ? e.message : ""}`.trim());
+        setBusy(false);
+        return;
+      }
+
+      setFilename(fname);
+      setMarkdown(md);
+      setOpen(true);
+      setBusy(false);
+
+      if (account?.id) {
+        try {
+          const { error } = await createClient()
+            .from("profiles")
+            .upsert({ id: account.id, linkedin_markdown: md, linkedin_filename: fname });
+          if (error) throw error;
+        } catch {
+          setErr("Se convirtió, pero no se pudo guardar (falta correr la migración de perfil).");
+        }
+      }
+    },
+    [account?.id]
+  );
+
+  const remove = async () => {
+    setFilename("");
+    setMarkdown("");
+    setOpen(false);
+    if (!account?.id) return;
+    try {
+      await createClient().from("profiles").upsert({ id: account.id, linkedin_markdown: null, linkedin_filename: null });
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const onPick = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (f) convert(f);
+    e.target.value = "";
+  };
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const f = e.dataTransfer.files?.[0];
+    if (f) convert(f);
+  };
+
+  return (
+    <>
+      <PanelHead title="Tu LinkedIn" hint="Sube el export de tu perfil de LinkedIn en PDF. La sala lo lee para entender tu trayectoria completa, más allá de lo que cabe en el CV." />
+
+      <div className="pf-howto">
+        <div className="pf-howto-title">Cómo exportar tu perfil de LinkedIn</div>
+        <ol className="pf-howto-list">
+          <li>Entra a tu perfil de LinkedIn (tu foto → <b>Ver perfil</b>).</li>
+          <li>Bajo tu nombre, abre el menú <b>Recursos</b> (o <b>More</b>).</li>
+          <li>Elige <b>Guardar como PDF</b> y descarga el archivo.</li>
+          <li>Súbelo aquí abajo.</li>
+        </ol>
+        <p className="pf-howto-tip">
+          ¿Quieres un export más completo? En <b>Configuración → Privacidad de datos → Obtén una copia de tus datos</b>,
+          pide el archivo extendido — incluye mucho más detalle que el PDF básico.
+        </p>
+      </div>
+
+      <div
+        className={`pf-drop${dragOver ? " over" : ""}${busy ? " busy" : ""}`}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={onDrop}
+        onClick={() => !busy && fileRef.current?.click()}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && !busy && fileRef.current?.click()}
+      >
+        <input ref={fileRef} type="file" accept=".pdf,.docx" hidden onChange={onPick} />
+        {busy ? (
+          <div className="pf-drop-busy">
+            <span className="blink" /> Convirtiendo a Markdown…
+          </div>
+        ) : (
+          <>
+            <div className="pf-drop-title">Arrastra el export de LinkedIn aquí o toca para subir</div>
+            <div className="pf-drop-sub">PDF o DOCX · hasta 8 MB</div>
+          </>
+        )}
+      </div>
+      {err && <p className="pf-msg err">{err}</p>}
+      {!hasSession && markdown && <p className="pf-help">Inicia sesión para guardar tu perfil de LinkedIn.</p>}
+
+      {markdown && (
+        <div className="pf-cvlist">
+          <div className="pf-cv active">
+            <div className="pf-cv-head">
+              <span className="pf-cv-name">{filename || "linkedin.pdf"}</span>
+              <span className="pf-cv-badge">Guardado</span>
+              <div className="pf-cv-actions">
+                <button className="pf-linkbtn" onClick={() => setOpen((o) => !o)}>{open ? "Ocultar" : "Ver"}</button>
+                <button className="pf-linkbtn danger" onClick={remove}>Eliminar</button>
+              </div>
+            </div>
+            {open && <pre className="pf-md">{markdown}</pre>}
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ─────────────────────────── Tu Momento ─────────────────────────── */
+
+function MomentoPanel({ account }: { account: Account | null }) {
+  const [selected, setSelected] = useState<string>("");
   const [loaded, setLoaded] = useState(false);
   const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
 
@@ -851,10 +1019,10 @@ function ConocimientosPanel({ account }: { account: Account | null }) {
       try {
         const { data } = await createClient()
           .from("profiles")
-          .select("knowledge")
+          .select("momento")
           .eq("id", account.id)
           .maybeSingle();
-        if (alive && Array.isArray(data?.knowledge)) setItems(data.knowledge as string[]);
+        if (alive && typeof data?.momento === "string") setSelected(data.momento);
       } catch {
         /* empty */
       } finally {
@@ -866,163 +1034,45 @@ function ConocimientosPanel({ account }: { account: Account | null }) {
     };
   }, [account?.id]);
 
-  const persist = async (next: string[]) => {
-    setItems(next);
-    if (!account?.id) return;
+  const choose = async (id: string) => {
+    const next = selected === id ? "" : id; // click the selected one to clear
+    setSelected(next);
+    if (!account?.id) return; // the "inicia sesión" hint below already covers this
     try {
-      const { error } = await createClient().from("profiles").upsert({ id: account.id, knowledge: next });
+      const { error } = await createClient().from("profiles").upsert({ id: account.id, momento: next || null });
       if (error) throw error;
-      setMsg({ kind: "ok", text: "Guardado." });
+      setMsg({ kind: "ok", text: next ? "Guardado." : "Selección eliminada." });
       setTimeout(() => setMsg(null), 1500);
     } catch (e) {
       setMsg({ kind: "err", text: e instanceof Error ? e.message : "No se pudo guardar." });
     }
   };
 
-  const add = () => {
-    const t = draft.trim();
-    if (t && !items.includes(t)) persist([...items, t]);
-    setDraft("");
-  };
-  const remove = (t: string) => persist(items.filter((x) => x !== t));
-
   return (
     <>
-      <PanelHead title="Conocimientos" hint="Skills, herramientas y certificaciones que no aparecen en tu CV — por ejemplo SAP, EOS, PMP, Six Sigma. La sala las usa en tu diagnóstico y práctica." />
-      <div className="chips">
-        {items.map((t) => (
-          <span className="chip" key={t}>
-            {t}
-            <button type="button" className="x" aria-label={`Quitar ${t}`} onClick={() => remove(t)}>×</button>
-          </span>
+      <PanelHead title="Tu Momento" hint="¿Cuál describe mejor dónde estás hoy? Elige uno. La sala lo usa para que tu diagnóstico y tu práctica hablen de tu situación real, no de un caso genérico." />
+
+      <div className="mom-list" role="radiogroup" aria-label="Tu momento profesional">
+        {MOMENTS.map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            role="radio"
+            aria-checked={selected === m.id}
+            className={`mom-card${selected === m.id ? " on" : ""}`}
+            onClick={() => choose(m.id)}
+          >
+            <span className="mom-dot" aria-hidden="true" />
+            <span className="mom-text">
+              <span className="mom-title">{m.title}</span>
+              <span className="mom-desc">{m.description}</span>
+            </span>
+          </button>
         ))}
-        <input
-          className="chipinput"
-          placeholder="+ Agregar…"
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") {
-              e.preventDefault();
-              add();
-            }
-          }}
-        />
-      </div>
-      {loaded && !account?.id && <p className="pf-help">Inicia sesión para guardar tus conocimientos.</p>}
-      {msg && <p className={`pf-msg ${msg.kind}`} style={{ marginTop: 10 }}>{msg.text}</p>}
-    </>
-  );
-}
-
-/* ─────────────────────────── Logros ─────────────────────────── */
-
-type Logro = { title: string; impact: string; year: string; detail: string };
-
-function LogrosPanel({ account }: { account: Account | null }) {
-  const [items, setItems] = useState<Logro[]>([]);
-  const [form, setForm] = useState<Logro>({ title: "", impact: "", year: "", detail: "" });
-  const [msg, setMsg] = useState<{ kind: "ok" | "err"; text: string } | null>(null);
-
-  useEffect(() => {
-    if (!account?.id) return;
-    let alive = true;
-    (async () => {
-      try {
-        const { data } = await createClient()
-          .from("profiles")
-          .select("achievements")
-          .eq("id", account.id)
-          .maybeSingle();
-        if (alive && Array.isArray(data?.achievements)) setItems(data.achievements as Logro[]);
-      } catch {
-        /* empty */
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, [account?.id]);
-
-  const persist = async (next: Logro[]) => {
-    setItems(next);
-    if (!account?.id) {
-      setMsg({ kind: "err", text: "Inicia sesión para guardar tus logros." });
-      return;
-    }
-    try {
-      const { error } = await createClient().from("profiles").upsert({ id: account.id, achievements: next });
-      if (error) throw error;
-      setMsg({ kind: "ok", text: "Guardado." });
-      setTimeout(() => setMsg(null), 1500);
-    } catch (e) {
-      setMsg({ kind: "err", text: e instanceof Error ? e.message : "No se pudo guardar." });
-    }
-  };
-
-  const addLogro = () => {
-    if (!form.title.trim() && !form.detail.trim()) {
-      setMsg({ kind: "err", text: "Agrega al menos un título." });
-      return;
-    }
-    persist([
-      { title: form.title.trim(), impact: form.impact.trim(), year: form.year.trim(), detail: form.detail.trim() },
-      ...items,
-    ]);
-    setForm({ title: "", impact: "", year: "", detail: "" });
-  };
-  const removeLogro = (i: number) => persist(items.filter((_, idx) => idx !== i));
-
-  const set = (k: keyof Logro, v: string) => setForm((f) => ({ ...f, [k]: v }));
-
-  return (
-    <>
-      <PanelHead title="Logros" hint="Tus hitos clave: proyectos, reestructuraciones, lanzamientos, resultados que marcaron tu carrera. La sala los usa para armar tu narrativa." />
-
-      <div className="lg-form">
-        <div className="lg-form-row">
-          <div style={{ flex: 2 }}>
-            <label className="fld" htmlFor="lg-title">Título del logro</label>
-            <input className="txt" id="lg-title" value={form.title} placeholder="Ej. Reestructuré la operación de LatAm" onChange={(e) => set("title", e.target.value)} />
-          </div>
-          <div style={{ width: 110 }}>
-            <label className="fld" htmlFor="lg-year">Año</label>
-            <input className="txt" id="lg-year" value={form.year} placeholder="2023" onChange={(e) => set("year", e.target.value)} />
-          </div>
-        </div>
-        <div style={{ marginTop: 14 }}>
-          <label className="fld" htmlFor="lg-impact">Impacto / métrica</label>
-          <input className="txt" id="lg-impact" value={form.impact} placeholder="Ej. +32% de eficiencia, ahorro de $1.2M" onChange={(e) => set("impact", e.target.value)} />
-        </div>
-        <div style={{ marginTop: 14 }}>
-          <label className="fld" htmlFor="lg-detail">Descripción</label>
-          <textarea className="txt" id="lg-detail" rows={3} value={form.detail} placeholder="Qué hiciste, cómo, y por qué importó." onChange={(e) => set("detail", e.target.value)} />
-        </div>
-        <div className="pf-actions">
-          {msg && <span className={`pf-msg ${msg.kind}`}>{msg.text}</span>}
-          <button className="btn" type="button" onClick={addLogro}>Agregar logro</button>
-        </div>
       </div>
 
-      <div className="kicker-rule" />
-
-      {items.length === 0 ? (
-        <p className="pf-empty">Todavía no has agregado logros.</p>
-      ) : (
-        <div className="lg-list">
-          {items.map((l, i) => (
-            <div className="lg-item" key={i}>
-              <div className="lg-item-head">
-                <span className="lg-item-title">{l.title || "(sin título)"}</span>
-                {l.year && <span className="lg-item-year">{l.year}</span>}
-                <button className="pf-linkbtn danger" onClick={() => removeLogro(i)}>Eliminar</button>
-              </div>
-              {l.impact && <p className="lg-item-impact">{l.impact}</p>}
-              {l.detail && <p className="lg-item-detail">{l.detail}</p>}
-            </div>
-          ))}
-        </div>
-      )}
+      {loaded && !account?.id && <p className="pf-help">Inicia sesión para guardar tu momento.</p>}
+      {msg && <p className={`pf-msg ${msg.kind}`} style={{ marginTop: 12 }}>{msg.text}</p>}
     </>
   );
 }
