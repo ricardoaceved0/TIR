@@ -405,6 +405,81 @@
 }
 .tir .lg-item-detail { margin-top: 6px; font-size: 13px; color: var(--body); line-height: 1.55; }
 
+/* ---------- Tu LinkedIn: export instructions ---------- */
+.tir .pf-howto {
+  background: var(--wash);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 16px;
+}
+.tir .pf-howto-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.tir .pf-howto-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--body);
+}
+.tir .pf-howto-list b { color: var(--ink); font-weight: 600; }
+.tir .pf-howto-tip {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.tir .pf-howto-tip b { color: var(--body); font-weight: 600; }
+
+/* ---------- Tu Momento: single-select cards ---------- */
+.tir .mom-list { display: flex; flex-direction: column; gap: 10px; }
+.tir .mom-card {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  text-align: left;
+  cursor: pointer;
+  background: var(--paper);
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  padding: 16px 18px;
+  font-family: inherit;
+  transition: 0.16s;
+}
+.tir .mom-card:hover { border-color: var(--ink); }
+.tir .mom-card.on { border-color: var(--mark); box-shadow: inset 3px 0 0 var(--mark); }
+.tir .mom-card:focus-visible { outline: 3px solid var(--mark); outline-offset: 2px; }
+.tir .mom-dot {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  transition: 0.16s;
+}
+.tir .mom-card.on .mom-dot {
+  border-color: var(--mark);
+  background: radial-gradient(circle, var(--mark) 0 40%, transparent 44%);
+}
+.tir .mom-text { display: flex; flex-direction: column; min-width: 0; }
+.tir .mom-title {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.tir .mom-desc { margin-top: 6px; font-size: 13px; line-height: 1.55; color: var(--body); }
+
 /* ---------- Historial ---------- */
 .tir .pf-export-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
 .tir .pf-export-row .btn { text-decoration: none; }

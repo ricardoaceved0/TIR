@@ -1,3 +1,5 @@
+import { momentById } from "@/lib/prompt/moments";
+
 /**
  * The candidate intake captured on Entrada (screen 01) and posted to
  * /api/analyze. Mirrors the fields in app/member/MemberArea.tsx.
@@ -8,15 +10,15 @@ export type Intake = {
   fecha: string; // YYYY-MM-DD, may be ""
   jobDescription: string;
   stage: string; // e.g. "Reclutador" | "Jefe Directo" | ...
-  linkedinUrl: string; // may be ""
+  linkedinUrl: string; // may be "" (the interviewer's LinkedIn, from Entrada)
   interviewerTitle: string; // may be ""
   tools: string[];
-  /** Candidate CV as Markdown (from /profile → Mis CVs). May be "". */
+  /** Candidate CV as Markdown (from /profile → Tu CV). May be "". */
   cvText: string;
-  /** Extra skills/certs not on the CV (/profile → Conocimientos). */
-  conocimientos: string[];
-  /** Career milestones (/profile → Logros). */
-  logros: { title: string; impact: string; year: string; detail: string }[];
+  /** Candidate's LinkedIn profile export as text (/profile → Tu LinkedIn). May be "". */
+  linkedinText: string;
+  /** The candidate's chosen career moment id (/profile → Tu Momento). May be "". */
+  momento: string;
   /** Language the AI should answer in. Defaults to Spanish. */
   preferredLanguage?: string;
 };
@@ -43,40 +45,26 @@ export function normalizeIntake(input: unknown): Intake {
       ? o.tools.split(",").map((t) => t.trim()).filter(Boolean)
       : [],
     cvText: str(o.cvText, o.cv_text),
-    conocimientos: Array.isArray(o.conocimientos)
-      ? o.conocimientos.filter((t): t is string => typeof t === "string")
-      : [],
-    logros: Array.isArray(o.logros)
-      ? o.logros
-          .map((l) => {
-            const one = (v: unknown) => (typeof v === "string" ? v.trim() : "");
-            const o2 = (l ?? {}) as Record<string, unknown>;
-            return { title: one(o2.title), impact: one(o2.impact), year: one(o2.year), detail: one(o2.detail) };
-          })
-          .filter((l) => l.title || l.detail)
-      : [],
+    linkedinText: str(o.linkedinText, o.linkedin_text),
+    momento: str(o.momento),
     preferredLanguage: str(o.preferredLanguage) || "español",
   };
 }
 
 /** Render the intake as the human-readable data block the AI analyzes. */
 export function intakeToText(intake: Intake): string {
+  const moment = momentById(intake.momento);
   const lines = [
     "CANDIDATE CV (MARKDOWN):",
     intake.cvText || "(no proporcionado)",
     "",
-    `Herramientas / metodologías del candidato: ${intake.tools.length ? intake.tools.join(", ") : "(ninguna)"}`,
-    `Conocimientos adicionales (no en el CV): ${intake.conocimientos.length ? intake.conocimientos.join(", ") : "(ninguno)"}`,
+    "PERFIL DE LINKEDIN DEL CANDIDATO (EXPORT):",
+    intake.linkedinText || "(no proporcionado)",
     "",
-    "LOGROS PRINCIPALES:",
-    intake.logros.length
-      ? intake.logros
-          .map(
-            (l, i) =>
-              `${i + 1}. ${l.title}${l.year ? ` (${l.year})` : ""}${l.impact ? ` — impacto: ${l.impact}` : ""}${l.detail ? `: ${l.detail}` : ""}`
-          )
-          .join("\n")
-      : "(ninguno)",
+    "MOMENTO PROFESIONAL DEL CANDIDATO:",
+    moment ? `${moment.title} — ${moment.description}` : "(no especificado)",
+    "",
+    `Herramientas / metodologías del candidato: ${intake.tools.length ? intake.tools.join(", ") : "(ninguna)"}`,
     "",
     "JOB DETAILS:",
     `- Empresa: ${intake.empresa || "(no especificada)"}`,

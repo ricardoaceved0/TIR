@@ -52,8 +52,12 @@ create index if not exists profiles_role_idx on public.profiles (role);
 -- ---------- account lock + profile lists (columns on profiles) --------------
 alter table public.profiles add column if not exists locked boolean not null default false;
 alter table public.profiles add column if not exists deletion_requested_at timestamptz;
-alter table public.profiles add column if not exists knowledge jsonb not null default '[]'::jsonb;      -- string[]
-alter table public.profiles add column if not exists achievements jsonb not null default '[]'::jsonb;   -- {title,impact,year,detail}[]
+alter table public.profiles add column if not exists knowledge jsonb not null default '[]'::jsonb;      -- string[] (legacy, unused)
+alter table public.profiles add column if not exists achievements jsonb not null default '[]'::jsonb;   -- {title,impact,year,detail}[] (legacy, unused)
+-- Tu LinkedIn (profile export → Markdown) + Tu Momento (chosen situation id)
+alter table public.profiles add column if not exists linkedin_markdown text;
+alter table public.profiles add column if not exists linkedin_filename text;
+alter table public.profiles add column if not exists momento text;
 
 -- ---------- cvs: uploaded CV + its Markdown conversion ----------------------
 create table if not exists public.cvs (
